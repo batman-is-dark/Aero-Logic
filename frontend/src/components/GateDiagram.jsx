@@ -211,14 +211,14 @@ export function GateDiagram({ selectedPlan }) {
       <div
         ref={containerRef}
         className="overflow-auto scrollbar-thin p-6 bg-aero-card flex-1"
-        style={{ height: '400px' }}
+        style={{ height: '600px', minHeight: '600px' }}
       >
         <svg
           width="100%"
           height="100%"
-          viewBox="0 0 1400 600"
-          preserveAspectRatio="xMidYMid meet"
-          style={{ minWidth: '600px', minHeight: '500px' }}
+          viewBox="0 0 1600 800"
+          preserveAspectRatio="xMinYMin meet"
+          style={{ minWidth: '800px', minHeight: '700px' }}
         >
           {/* Arrow marker definition */}
           <defs>
@@ -233,20 +233,18 @@ export function GateDiagram({ selectedPlan }) {
               <polygon points="0 0, 10 3, 0 6" fill="#6b7280" />
             </marker>
             <style>{`
-              @keyframes spin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
+              @keyframes pulse-border {
+                0%, 100% { 
+                  stroke-width: 3;
+                  opacity: 1;
+                }
+                50% { 
+                  stroke-width: 5;
+                  opacity: 0.7;
+                }
               }
-              @keyframes pulse-glow {
-                0%, 100% { r: 5; opacity: 0.8; }
-                50% { r: 7; opacity: 1; }
-              }
-              .gate-active-indicator {
-                animation: spin 1.5s linear infinite;
-                transform-origin: center;
-              }
-              .gate-active-box {
-                animation: pulse-glow 1.5s ease-in-out infinite;
+              .gate-active-box-pulse {
+                animation: pulse-border 1s ease-in-out infinite;
               }
             `}</style>
           </defs>
@@ -300,6 +298,22 @@ export function GateDiagram({ selectedPlan }) {
 
             return (
               <g key={`task-${taskId}`}>
+                {/* Active task glow (background pulse) */}
+                {isActive && (
+                  <rect
+                    x={boxX - 4}
+                    y={boxY - 4}
+                    width={boxWidth + 8}
+                    height={boxHeight + 8}
+                    rx="6"
+                    fill="none"
+                    stroke="#fbbf24"
+                    strokeWidth="2"
+                    opacity="0.5"
+                    className="gate-active-box-pulse"
+                  />
+                )}
+
                 {/* Task box */}
                 <rect
                   x={boxX}
@@ -339,16 +353,21 @@ export function GateDiagram({ selectedPlan }) {
                   {task.duration_minutes}m
                 </text>
 
-                {/* Active task spinning indicator */}
+                {/* Active indicator - Arrow pointing to task */}
                 {isActive && (
-                  <circle
-                    cx={boxX + boxWidth - 12}
-                    cy={boxY + 12}
-                    r="5"
-                    fill="#fbbf24"
-                    opacity="0.8"
-                    className="gate-active-indicator"
-                  />
+                  <g>
+                    <text
+                      x={boxX + boxWidth / 2}
+                      y={boxY - 15}
+                      textAnchor="middle"
+                      fontSize="16"
+                      fill="#fbbf24"
+                      className="pointer-events-none"
+                      fontWeight="bold"
+                    >
+                      ▶
+                    </text>
+                  </g>
                 )}
               </g>
             );
