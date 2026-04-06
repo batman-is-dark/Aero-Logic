@@ -1,0 +1,280 @@
+INFO:     127.0.0.1:54237 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49943 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49946 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62419 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62421 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62420 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63211 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63215 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63213 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63219 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63220 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63223 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63225 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61848 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61850 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56905 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56906 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56907 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56910 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56911 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56913 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 150766
+[K2] Successfully extracted JSON from response!
+[K2] API call successful
+INFO:     127.0.0.1:60043 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59106 - "POST /api/scenario/disruption HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 264576
+[K2] Could not extract JSON. Preview: We need to produce a JSON object with "plans" array of three plans A, B, C, each with fields: plan_id, strategy, total_delay_minutes, apu_usage_minutes, ground_power_used (boolean), on_time_probability (0-1), fuel_cost_estimate_usd (number), timeline (array of tasks with task name, start_min, duration_min, parallel boolean), reasoning (string), tradeoffs (object with pros and cons arrays). Then "comparison" object with summary (one sentence), metrics: lowest_delay, lowest_fuel_cost, best_on_time...
+[K2] API/extraction error: Could not parse JSON from K2 response
+INFO:     127.0.0.1:60436 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54832 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54833 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54834 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54837 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54838 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54840 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 273111
+[K2] Could not extract JSON. Preview: We need to produce a JSON object with "plans" array of three plans A, B, C, each with fields: plan_id, strategy, total_delay_minutes, apu_usage_minutes, ground_power_used (boolean), on_time_probability (0-1), fuel_cost_estimate_usd (number), timeline (array of tasks with task name, start_min, duration_min, parallel boolean), reasoning (string), tradeoffs (object with pros and cons arrays). Then "comparison" object with summary, metrics: lowest_delay, lowest_fuel_cost, best_on_time_probability, l...
+[K2] API/extraction error: Could not parse JSON from K2 response
+INFO:     127.0.0.1:63749 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59113 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59114 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59115 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50308 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50310 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50311 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53437 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53438 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53439 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53441 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53444 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53445 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 233916
+[K2] Could not extract JSON. Preview: We need to produce a JSON object with "plans" array of three plans A, B, C, each with fields: plan_id, strategy, total_delay_minutes, apu_usage_minutes, ground_power_used (boolean), on_time_probability (0-1), fuel_cost_estimate_usd (number), timeline (array of tasks with task name, start_min, duration_min, parallel boolean), reasoning (string), tradeoffs (object with pros and cons arrays). Then "comparison" object with summary, metrics: lowest_delay, lowest_fuel_cost, best_on_time_probability, l...
+[K2] API/extraction error: Could not parse JSON from K2 response
+INFO:     127.0.0.1:59356 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54224 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54227 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54228 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54230 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54232 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54234 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49828 - "POST /api/scenario/disruption HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 213903
+[K2] Successfully extracted JSON from response!
+[K2] API call successful
+INFO:     127.0.0.1:57299 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "POST /api/scenario/disruption HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 255666
+[K2] Could not extract JSON. Preview: We need to produce a JSON object with "plans" array of three plans A, B, C, each with fields: plan_id, strategy, total_delay_minutes, apu_usage_minutes, ground_power_used (boolean), on_time_probability (0-1), fuel_cost_estimate_usd (number), timeline (array of tasks with task name, start_min, duration_min, parallel boolean), reasoning (string), tradeoffs (object with pros and cons arrays). Then "comparison" object with summary, metrics: lowest_delay, lowest_fuel_cost, best_on_time_probability, l...
+[K2] API/extraction error: Could not parse JSON from K2 response
+INFO:     127.0.0.1:61225 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52668 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52670 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52671 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54553 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52072 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52074 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52796 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52797 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52798 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55300 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55302 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55303 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63867 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63868 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63869 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61181 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61185 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61184 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54843 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54844 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54846 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64165 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64166 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64168 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63835 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63839 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63838 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62609 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62610 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62611 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59119 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59120 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59121 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59935 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59937 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59936 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56659 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56660 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56661 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50641 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50642 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50643 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51889 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51891 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51892 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51897 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51896 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51898 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62444 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62448 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62447 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62451 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62453 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62454 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61441 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61442 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61443 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61445 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61448 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61449 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58018 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58019 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58020 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51181 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51182 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51184 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 197217
+[K2] Could not extract JSON. Preview: We need to produce a JSON object with "plans" array of three plans (A, B, C) each with fields: plan_id, strategy, total_delay_minutes, apu_usage_minutes, ground_power_used (boolean), on_time_probability (0-1), fuel_cost_estimate_usd (number), timeline (array of tasks with task name, start_min, duration_min, parallel boolean), reasoning (string), tradeoffs (object with pros and cons arrays). Then "comparison" object with summary (one sentence), metrics: lowest_delay, lowest_fuel_cost, best_on_tim...
+[K2] API/extraction error: Could not parse JSON from K2 response
+INFO:     127.0.0.1:60273 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57311 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57312 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57314 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57318 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57316 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56750 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57701 - "POST /api/scenario/disruption HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 275808
+[K2] Could not extract JSON. Preview: We need to produce a JSON object with "plans" array of three plans (A, B, C). Each plan must have fields: plan_id, strategy, total_delay_minutes, apu_usage_minutes, ground_power_used (boolean), on_time_probability (0-1), fuel_cost_estimate_usd (number), timeline (array of tasks with task name, start_min, duration_min, parallel boolean), reasoning (string), tradeoffs (object with pros and cons arrays). Then "comparison" object with summary (one sentence), metrics: lowest_delay, lowest_fuel_cost, ...
+[K2] API/extraction error: Could not parse JSON from K2 response
+INFO:     127.0.0.1:50312 - "POST /api/optimize HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 229663
+[K2] Could not extract JSON. Preview: We need to produce a JSON object with "plans" array of three plans A, B, C, each with fields: plan_id, strategy, total_delay_minutes, apu_usage_minutes, ground_power_used (boolean), on_time_probability (0-1), fuel_cost_estimate_usd (number), timeline (array of tasks with task name, start_min, duration_min, parallel boolean), reasoning (string), tradeoffs (object with pros and cons arrays). Then "comparison" object with summary, metrics: lowest_delay, lowest_fuel_cost, best_on_time_probability, l...
+[K2] API/extraction error: Could not parse JSON from K2 response
+INFO:     127.0.0.1:55800 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56139 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56142 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56143 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56145 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53416 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53418 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 264947
+[K2] Successfully extracted JSON from response!
+[K2] API call successful
+INFO:     127.0.0.1:49672 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58827 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58828 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58829 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55475 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55476 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55478 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 127267
+[K2] Could not extract JSON. Preview: We need to produce a JSON object with "plans" array of three plans (A, B, C) each with fields: plan_id, strategy, total_delay_minutes, apu_usage_minutes, ground_power_used (boolean), on_time_probability (0-1), fuel_cost_estimate_usd (number), timeline (array of tasks with task name, start_min, duration_min, parallel boolean), reasoning (string), tradeoffs (object with pros and cons arrays). Then "comparison" object with summary (one sentence), metrics: lowest_delay, lowest_fuel_cost, best_on_tim...
+[K2] API/extraction error: Could not parse JSON from K2 response
+INFO:     127.0.0.1:56368 - "POST /api/optimize HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 264947
+[K2] Successfully extracted JSON from response!
+[K2] API call successful
+INFO:     127.0.0.1:64123 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53708 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53710 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53709 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57555 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57558 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57559 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57561 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59956 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59958 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64845 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64846 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64847 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64850 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64851 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64853 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 261849
+[K2] Successfully extracted JSON from response!
+[K2] API call successful
+INFO:     127.0.0.1:62004 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56479 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56481 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56483 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56487 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56485 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57573 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 262770
+[K2] Successfully extracted JSON from response!
+[K2] API call successful
+INFO:     127.0.0.1:65442 - "POST /api/optimize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64103 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64105 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64106 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64108 - "GET /api/config/aircraft-types HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64110 - "GET /api/config/weather-conditions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50512 - "GET /api/config/disruptions HTTP/1.1" 200 OK
+[K2] Calling API...
+[K2] Sending request to https://api.k2think.ai/v1/chat/completions
+[K2] Response status: 200
+[K2] Response keys: dict_keys(['id', 'choices', 'created', 'model', 'system_fingerprint', 'object', 'usage', 'time_info'])
+[K2] Content length: 300090
+[K2] Could not extract JSON. Preview: We need to produce a JSON object with "plans" array of three plans A, B, C, each with fields: plan_id, strategy, total_delay_minutes, apu_usage_minutes, ground_power_used (boolean), on_time_probability (0-1), fuel_cost_estimate_usd (number), timeline (array of tasks with task name, start_min, duration_min, parallel boolean), reasoning (string), tradeoffs (object with pros and cons arrays). Then "comparison" object with summary, metrics: lowest_delay, lowest_fuel_cost, best_on_time_probability, l...
+[K2] API/extraction error: Could not parse JSON from K2 response
+INFO:     127.0.0.1:61756 - "POST /api/optimize HTTP/1.1" 200 OK
