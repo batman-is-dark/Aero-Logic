@@ -24,8 +24,8 @@ export default function ScenarioPanel({ onOptimize, isLoading }) {
     simulate_disruption: false,
     disruption_name: '',
     selected_tasks: [
-      'Refueling', 'Cargo Unload', 'Cargo Load', 'Passenger Boarding',
-      'Catering', 'Aircraft Cleaning', 'Safety Inspection', 'Door Closure'
+      'refueling', 'cargo_unload', 'cargo_load', 'boarding',
+      'catering', 'cleaning', 'safety_inspection', 'door_close'
     ]
   });
 
@@ -178,19 +178,26 @@ export default function ScenarioPanel({ onOptimize, isLoading }) {
           {showTasks && (
             <div className="bg-[#162133] border border-gray-700 rounded-lg p-4 grid grid-cols-2 gap-3 shadow-inner">
               {[
-                'Refueling', 'Cargo Unload', 'Cargo Load', 'Passenger Boarding',
-                'Catering', 'Aircraft Cleaning', 'Safety Inspection', 'Door Closure',
-                'De-ice/Anti-ice', 'Ground Power/Cooling'
+                { id: 'refueling', name: 'Refueling' },
+                { id: 'cargo_unload', name: 'Cargo Unload' },
+                { id: 'cargo_load', name: 'Cargo Load' },
+                { id: 'boarding', name: 'Passenger Boarding' },
+                { id: 'catering', name: 'Catering' },
+                { id: 'cleaning', name: 'Aircraft Cleaning' },
+                { id: 'safety_inspection', name: 'Safety Inspection' },
+                { id: 'door_close', name: 'Door Closure' },
+                { id: 'deice_antiice', name: 'De-ice/Anti-ice' },
+                { id: 'power_cooling', name: 'Ground Power/Cooling' }
               ].map(task => (
-                <label key={task} className="flex items-center gap-2 cursor-pointer group">
+                <label key={task.id} className="flex items-center gap-2 cursor-pointer group">
                   <input
                     type="checkbox"
-                    checked={formData.selected_tasks.includes(task)}
-                    onChange={() => toggleTask(task)}
+                    checked={formData.selected_tasks.includes(task.id)}
+                    onChange={() => toggleTask(task.id)}
                     className="w-4 h-4 rounded border-gray-700 bg-[#0c1421] text-aero-accent focus:ring-aero-accent cursor-pointer"
                   />
                   <div className="flex flex-col">
-                    <span className="text-[11px] font-bold text-gray-400 group-hover:text-white transition-colors">{task}</span>
+                    <span className="text-[11px] font-bold text-gray-400 group-hover:text-white transition-colors">{task.name}</span>
                     <span className="text-[8px] text-gray-600 font-medium">15-30 min</span>
                   </div>
                 </label>
