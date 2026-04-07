@@ -211,14 +211,14 @@ export function GateDiagram({ selectedPlan }) {
       <div
         ref={containerRef}
         className="overflow-auto scrollbar-thin p-6 bg-aero-card flex-1"
-        style={{ height: '600px', minHeight: '600px' }}
+        style={{ height: '900px', minHeight: '900px' }}
       >
         <svg
           width="100%"
           height="100%"
-          viewBox="0 0 1600 800"
+          viewBox="0 0 1200 600"
           preserveAspectRatio="xMinYMin meet"
-          style={{ minWidth: '800px', minHeight: '700px' }}
+          style={{ minWidth: '1200px', minHeight: '600px' }}
         >
           {/* Arrow marker definition */}
           <defs>
