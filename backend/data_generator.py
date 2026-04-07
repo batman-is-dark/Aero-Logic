@@ -166,6 +166,7 @@ def generate_disruption_scenario(disruption_name: str = None) -> Dict[str, Any]:
     scenario["disruption"] = {
         "name": disruption["name"],
         "description": disruption["description"],
+        "delay_minutes": disruption["delay_minutes"],
         "severity": "HIGH" if disruption["delay_minutes"] >= 25 else "MEDIUM",
     }
 
