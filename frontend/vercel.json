@@ -1,0 +1,8 @@
+export default {
+  rewrites: async () => [
+    {
+      source: "/api/:path*",
+      destination: "https://aero-logic.onrender.com/:path*",
+    },
+  ],
+};
