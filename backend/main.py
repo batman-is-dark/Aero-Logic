@@ -61,27 +61,27 @@ async def root():
     return {"message": "Aero-Logic API - Aviation Ground Operations Optimizer"}
 
 
-@app.get("/api/health")
+@app.get("/health")
 async def health():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 
-@app.get("/api/config/aircraft-types")
+@app.get("/config/aircraft-types")
 async def get_aircraft_types():
     return {"aircraft_types": list(AIRCRAFT_TYPES.keys())}
 
 
-@app.get("/api/config/weather-conditions")
+@app.get("/config/weather-conditions")
 async def get_weather_conditions():
     return {"weather_conditions": [{"name": w["condition"], "description": w["description"]} for w in WEATHER_CONDITIONS]}
 
 
-@app.get("/api/config/disruptions")
+@app.get("/config/disruptions")
 async def get_disruptions():
     return {"disruptions": [{"name": d["name"], "description": d["description"]} for d in DISRUPTION_TEMPLATES]}
 
 
-@app.post("/api/scenario/generate")
+@app.post("/scenario/generate")
 async def generate_scenario(request: ScenarioInput):
     scenario = generate_base_scenario(
         aircraft_type=request.aircraft_type,
@@ -94,19 +94,19 @@ async def generate_scenario(request: ScenarioInput):
     return {"scenario": scenario}
 
 
-@app.post("/api/scenario/disruption")
+@app.post("/scenario/disruption")
 async def generate_disruption(request: DisruptionRequest):
     scenario = generate_disruption_scenario(request.disruption_name)
     return {"scenario": scenario}
 
 
-@app.post("/api/scenario/random")
+@app.post("/scenario/random")
 async def generate_random():
     scenario = generate_random_scenario()
     return {"scenario": scenario}
 
 
-@app.post("/api/optimize")
+@app.post("/optimize")
 async def optimize(request: OptimizationRequest):
     scenario_id = str(uuid.uuid4())
 
