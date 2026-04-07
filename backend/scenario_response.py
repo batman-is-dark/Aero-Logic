@@ -24,20 +24,23 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
     injected_delay = disruption.get("delay_minutes", 0) if disruption else 0
     weather_factor = weather.get("delay_factor", 1.0) if weather else 1.0
     apu_availability = 1.0 if ground_power else 0.3
-    base_delay = injected_delay + (base["base_turnaround"] * (weather_factor - 1))
+    # Calculate base delay: start with inherent turnaround buffer (10% of base turnaround) + disruptions + weather impact
+    inherent_delay = base["base_turnaround"] * 0.1  # 10% of base turnaround as inherent buffer
+    weather_delay = base["base_turnaround"] * max(0, weather_factor - 1)  # Only add delay if weather_factor > 1
+    base_delay = inherent_delay + injected_delay + weather_delay
     
-    # Calculate values first, then build reasoning
-    plan_a_delay = max(5, int(base_delay * 0.4))
+     # Calculate values first, then build reasoning
+    plan_a_delay = max(8, int(base_delay * 0.5))  # Delay-minimizing: ~50% of base
     plan_a_apu = int(base["base_turnaround"] * 0.9 * apu_availability)
     plan_a_fuel = int(base["fuel_rate"] * base["base_turnaround"] / 60 * 1.8)
     plan_a_ontime = round(min(0.95, 0.7 + (1 - weather_factor) * 0.3), 2)
     
-    plan_b_delay = int(base_delay + base["base_turnaround"] * 0.6)
+    plan_b_delay = max(15, int(base_delay * 1.2))  # Fuel-minimizing: ~120% of base (slower operations)
     plan_b_apu = int(base["base_turnaround"] * 0.2)
     plan_b_fuel = int(base["fuel_rate"] * base["base_turnaround"] / 60 * 0.7)
     plan_b_ontime = round(max(0.3, 0.6 - weather_factor * 0.2), 2)
     
-    plan_c_delay = int(base_delay + base["base_turnaround"] * 0.35)
+    plan_c_delay = max(12, int(base_delay * 0.75))  # Balanced: ~75% of base
     plan_c_apu = int(base["base_turnaround"] * 0.5)
     plan_c_fuel = int(base["fuel_rate"] * base["base_turnaround"] / 60 * 1.0)
     plan_c_ontime = round(min(0.85, max(0.5, 0.65 - (weather_factor - 1) * 0.2)), 2)
@@ -45,10 +48,14 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
     plan_a = {
         "plan_id": "A",
         "strategy": "Delay-Minimizing",
+        "total_delay": plan_a_delay,
         "total_delay_minutes": plan_a_delay,
+        "apu_usage": plan_a_apu,
         "apu_usage_minutes": plan_a_apu,
         "ground_power_used": ground_power and random.random() < 0.2,
         "on_time_probability": plan_a_ontime,
+        "on_time_percentage": plan_a_ontime,
+        "fuel_cost": plan_a_fuel,
         "fuel_cost_estimate_usd": plan_a_fuel,
         "timeline": _generate_timeline(base["base_turnaround"], strategy="delay"),
         "reasoning": (
@@ -65,10 +72,14 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
     plan_b = {
         "plan_id": "B",
         "strategy": "Fuel-Minimizing",
+        "total_delay": plan_b_delay,
         "total_delay_minutes": plan_b_delay,
+        "apu_usage": plan_b_apu,
         "apu_usage_minutes": plan_b_apu,
         "ground_power_used": True,
         "on_time_probability": plan_b_ontime,
+        "on_time_percentage": plan_b_ontime,
+        "fuel_cost": plan_b_fuel,
         "fuel_cost_estimate_usd": plan_b_fuel,
         "timeline": _generate_timeline(int(base["base_turnaround"] * 1.4), strategy="fuel"),
         "reasoning": (
@@ -85,10 +96,14 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
     plan_c = {
         "plan_id": "C",
         "strategy": "Balanced",
+        "total_delay": plan_c_delay,
         "total_delay_minutes": plan_c_delay,
+        "apu_usage": plan_c_apu,
         "apu_usage_minutes": plan_c_apu,
         "ground_power_used": ground_power,
         "on_time_probability": plan_c_ontime,
+        "on_time_percentage": plan_c_ontime,
+        "fuel_cost": plan_c_fuel,
         "fuel_cost_estimate_usd": plan_c_fuel,
         "timeline": _generate_timeline(int(base["base_turnaround"] * 1.2), strategy="balanced"),
         "reasoning": (
