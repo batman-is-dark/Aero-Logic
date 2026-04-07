@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plane, ArrowLeft, Cpu, Activity, Layout } from 'lucide-react';
+import { Plane, ArrowLeft, Cpu, Activity, Layout, AlertTriangle, Zap } from 'lucide-react';
 import ScenarioPanel from './ScenarioPanel';
 import { apiClient } from '../services/api';
 import PlanCard from './PlanCard';
@@ -14,10 +14,12 @@ export default function SimulationPage({ onBackToLanding }) {
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [currentScenario, setCurrentScenario] = useState(null);
 
   const handleOptimize = async (scenarioInput) => {
     setLoading(true);
     setError(null);
+    setCurrentScenario(scenarioInput);
     try {
       const result = await apiClient.optimize(scenarioInput);
       setOptimizationResult(result);
@@ -118,19 +120,37 @@ export default function SimulationPage({ onBackToLanding }) {
 
             {optimizationResult && (
               <>
-                {/* Active Reasoning Badge */}
-                <div className="bg-aero-accent/10 border border-aero-accent/20 p-6 rounded-2xl flex items-start gap-4 shadow-xl shadow-aero-accent/5">
-                  <div className="bg-aero-accent/20 p-2.5 rounded-xl text-aero-accent">
-                    <Zap className="w-6 h-6" />
+                {/* Active Reasoning Badge & Disruption Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-aero-accent/10 border border-aero-accent/20 p-6 rounded-2xl flex items-start gap-4 shadow-xl shadow-aero-accent/5">
+                    <div className="bg-aero-accent/20 p-2.5 rounded-xl text-aero-accent">
+                      <Zap className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-aero-accent flex items-center gap-2">
+                        K2 Reasoning Active
+                      </h3>
+                      <p className="text-gray-400 text-sm mt-1">
+                        Analyzing 3 counterfactual scenarios and selecting optimal operational strategy.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-aero-accent flex items-center gap-2">
-                      K2 Reasoning Active
-                    </h3>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Analyzing 3 counterfactual scenarios and selecting optimal operational strategy.
-                    </p>
-                  </div>
+
+                  {currentScenario?.simulate_disruption && (
+                    <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-2xl flex items-start gap-4 shadow-xl shadow-red-500/5">
+                      <div className="bg-red-500/20 p-2.5 rounded-xl text-red-500">
+                        <AlertTriangle className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-red-500 flex items-center gap-2">
+                          Disruption: {currentScenario.disruption_name || 'Active Constraint'}
+                        </h3>
+                        <p className="text-gray-400 text-sm mt-1">
+                          Operational constraints updated. Re-calculating safety margins and delay cascades.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Plan Selection Section */}
