@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-aero-dark text-white font-sans;
+  }
+  
+  input, select, textarea {
+    @apply bg-aero-card border border-gray-700 text-white rounded px-3 py-2 focus:outline-none focus:border-aero-accent;
+  }
+  
+  button {
+    @apply transition-colors;
+  }
+}
+
+@layer components {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #475569 #0f172a;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: #0f172a;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+  }
+}
