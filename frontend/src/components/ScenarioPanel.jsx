@@ -48,12 +48,25 @@ export default function ScenarioPanel({ onOptimize, isLoading }) {
 
   const handleGenerate = async () => {
     try {
-      const randomScenario = await apiClient.generateRandomScenario();
-      setFormData(prev => ({
-        ...prev,
-        ...randomScenario,
-        simulate_disruption: !!randomScenario.disruption_name
-      }));
+      // If disruption is selected, generate disruption scenario
+      if (formData.simulate_disruption && formData.disruption_name) {
+        const disruptionScenario = await apiClient.generateDisruption(formData.disruption_name);
+        setFormData(prev => ({
+          ...prev,
+          ...disruptionScenario.scenario,
+          simulate_disruption: true,
+          disruption_name: formData.disruption_name
+        }));
+      } else {
+        // Otherwise generate random scenario
+        const randomScenario = await apiClient.generateRandomScenario();
+        setFormData(prev => ({
+          ...prev,
+          ...randomScenario.scenario,
+          simulate_disruption: false,
+          disruption_name: ''
+        }));
+      }
     } catch (err) {
       console.error('Failed to generate scenario:', err);
     }

@@ -11,10 +11,26 @@ export const apiClient = {
   },
 
   async optimize(scenarioInput) {
+    // Transform frontend data to backend format
+    const optimizationRequest = {
+      scenario: {
+        aircraft_type: scenarioInput.aircraft_type,
+        gate: scenarioInput.gate,
+        scheduled_departure: scenarioInput.scheduled_departure,
+        weather: scenarioInput.weather_condition,
+        ground_power_available: scenarioInput.ground_power_available,
+        selected_tasks: scenarioInput.selected_tasks ? 
+          scenarioInput.selected_tasks.map(task => ({ task_id: task, required: true })) : 
+          [],
+      },
+      use_disruption: scenarioInput.simulate_disruption,
+      disruption_name: scenarioInput.disruption_name || null,
+    };
+
     const response = await fetch(`${BASE_URL}/optimize`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(scenarioInput),
+      body: JSON.stringify(optimizationRequest),
     });
     if (!response.ok) throw new Error('Optimization failed');
     return response.json();
