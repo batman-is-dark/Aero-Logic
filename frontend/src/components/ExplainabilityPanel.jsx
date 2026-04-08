@@ -9,6 +9,17 @@ export default function ExplainabilityPanel({ plan, k2Selection, allPlans }) {
     { id: 'details', label: 'Plan Details' },
   ];
 
+  // Calculate efficiency gain safely
+  const calcEfficiencyGain = () => {
+    if (!allPlans || allPlans.length < 2 || !k2Selection) return 'BASELINE';
+    const scores = allPlans.map(p => p.score || 0).filter(s => typeof s === 'number');
+    if (scores.length < 2) return 'BASELINE';
+    const minScore = Math.min(...scores);
+    const k2Score = k2Selection.score || 0;
+    if (typeof k2Score !== 'number') return 'BASELINE';
+    return `+${(k2Score - minScore).toFixed(1)}%`;
+  };
+
   return (
     <div className="bg-slate-950/80 backdrop-blur-xl border border-slate-800/50 rounded-2xl overflow-hidden shadow-2xl flex flex-col h-full">
       {/* Tabs */}
@@ -60,7 +71,7 @@ export default function ExplainabilityPanel({ plan, k2Selection, allPlans }) {
               <div className="p-5 bg-slate-900/50 border border-slate-800/50 rounded-xl group hover:border-cyan-500/30 transition-all">
                 <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">Efficiency Gain</p>
                 <p className="text-2xl font-black text-white">
-                  {allPlans.length > 1 ? `+${((k2Selection?.score - Math.min(...allPlans.map(p => p.score))).toFixed(1))}%` : 'BASELINE'}
+                  {calcEfficiencyGain()}
                 </p>
               </div>
             </div>

@@ -1,5 +1,45 @@
 const BASE_URL = '/api';
 
+// Transform backend plan data to frontend format
+function transformPlan(plan) {
+  const timeline = plan.timeline || [];
+  
+  // Transform timeline to task_timeline format
+  const task_timeline = timeline.map((task, idx) => ({
+    task_id: idx,
+    task_name: task.task,
+    start_minute: task.start_min,
+    end_minute: (task.start_min || 0) + (task.duration_min || 0),
+    duration_minutes: task.duration_min,
+    parallel: task.parallel,
+    category: categorizeTask(task.task),
+  }));
+
+  return {
+    ...plan,
+    task_timeline,
+  };
+}
+
+// Categorize tasks for color coding
+function categorizeTask(taskName) {
+  const lowerTask = taskName.toLowerCase();
+  if (lowerTask.includes('boarding') || lowerTask.includes('deplaning')) return 'Passenger';
+  if (lowerTask.includes('fuel')) return 'Fuel';
+  if (lowerTask.includes('cargo')) return 'Cargo';
+  if (lowerTask.includes('catering') || lowerTask.includes('water') || lowerTask.includes('cleaning')) return 'Service';
+  return 'Ops';
+}
+
+// Transform the full optimization response
+function transformResponse(response) {
+  return {
+    ...response,
+    plans: (response.plans || []).map(transformPlan),
+    selected_plan: response.selected_plan ? transformPlan(response.selected_plan) : response.selected_plan,
+  };
+}
+
 export const apiClient = {
   async getConfig() {
     const [aircraft, weather, disruptions] = await Promise.all([
@@ -33,7 +73,8 @@ export const apiClient = {
       body: JSON.stringify(optimizationRequest),
     });
     if (!response.ok) throw new Error('Optimization failed');
-    return response.json();
+    const result = await response.json();
+    return transformResponse(result);
   },
 
   async generateScenario(params) {
