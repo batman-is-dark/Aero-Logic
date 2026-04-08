@@ -10,17 +10,17 @@ export default function ExplainabilityPanel({ plan, k2Selection, allPlans }) {
   ];
 
   return (
-    <div className="bg-aero-card border border-gray-700 rounded-lg overflow-hidden">
+    <div className="bg-slate-950/80 backdrop-blur-xl border border-slate-800/50 rounded-2xl overflow-hidden shadow-2xl flex flex-col h-full">
       {/* Tabs */}
-      <div className="flex border-b border-gray-700 bg-aero-dark">
+      <div className="flex bg-slate-900/50 border-b border-slate-800/50 p-1">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+            className={`flex-1 px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all rounded-xl ${
               activeTab === tab.id
-                ? 'text-aero-accent border-b-2 border-aero-accent'
-                : 'text-gray-400 hover:text-gray-300'
+                ? 'text-cyan-400 bg-cyan-500/10 shadow-sm shadow-cyan-500/10'
+                : 'text-slate-500 hover:text-slate-300'
             }`}
           >
             {tab.label}
@@ -29,30 +29,38 @@ export default function ExplainabilityPanel({ plan, k2Selection, allPlans }) {
       </div>
 
       {/* Content */}
-      <div className="p-6 min-h-64">
+      <div className="p-8 flex-1">
         {activeTab === 'justification' && (
-          <div className="space-y-4">
-            <h3 className="font-semibold text-white mb-3">Why K2 Recommends This Plan</h3>
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+              <div className="w-1.5 h-6 bg-cyan-500 rounded-full" />
+              K2 Strategic Logic
+            </h3>
             {k2Selection?.reasoning ? (
-              <p className="text-gray-300 leading-relaxed text-sm">{k2Selection.reasoning}</p>
+              <p className="text-slate-300 leading-relaxed text-sm font-medium italic">
+                "{k2Selection.reasoning}"
+              </p>
             ) : (
-              <p className="text-gray-400 text-sm">No justification available</p>
+              <p className="text-slate-500 text-sm uppercase font-black tracking-widest">Awaiting tactical data...</p>
             )}
           </div>
         )}
 
         {activeTab === 'comparison' && (
-          <div className="space-y-4">
-            <h3 className="font-semibold text-white mb-3">AI vs Optimizer Analysis</h3>
-            <div className="space-y-3 text-sm">
-              <div className="p-3 bg-aero-dark rounded border border-gray-700">
-                <p className="text-gray-400 mb-1">K2 Selection</p>
-                <p className="font-semibold text-aero-accent">{k2Selection?.plan_id}</p>
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+              <div className="w-1.5 h-6 bg-indigo-500 rounded-full" />
+              Intelligence Delta
+            </h3>
+            <div className="space-y-4">
+              <div className="p-5 bg-slate-900/50 border border-slate-800/50 rounded-xl group hover:border-cyan-500/30 transition-all">
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">K2 Designated Protocol</p>
+                <p className="text-2xl font-black text-cyan-400 italic">PLAN {k2Selection?.plan_id || 'NULL'}</p>
               </div>
-              <div className="p-3 bg-aero-dark rounded border border-gray-700">
-                <p className="text-gray-400 mb-1">Comparison Factor</p>
-                <p className="font-semibold text-white">
-                  {allPlans.length > 1 ? `+${((k2Selection?.score - Math.min(...allPlans.map(p => p.score))).toFixed(2))}% improvement` : 'Single plan'}
+              <div className="p-5 bg-slate-900/50 border border-slate-800/50 rounded-xl group hover:border-cyan-500/30 transition-all">
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">Efficiency Gain</p>
+                <p className="text-2xl font-black text-white">
+                  {allPlans.length > 1 ? `+${((k2Selection?.score - Math.min(...allPlans.map(p => p.score))).toFixed(1))}%` : 'BASELINE'}
                 </p>
               </div>
             </div>
@@ -60,43 +68,33 @@ export default function ExplainabilityPanel({ plan, k2Selection, allPlans }) {
         )}
 
         {activeTab === 'details' && (
-          <div className="space-y-3 text-sm">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+              <div className="w-1.5 h-6 bg-slate-500 rounded-full" />
+              Metric Breakdown
+            </h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 bg-aero-dark rounded border border-gray-700">
-                <p className="text-gray-400 mb-1">Turnaround Time</p>
-                <p className="font-semibold text-white">{plan?.turnaround_time || 'N/A'}m</p>
+              <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800/50">
+                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Duration</p>
+                <p className="text-lg font-black text-white">{plan?.turnaround_time || '0'}M</p>
               </div>
-              <div className="p-3 bg-aero-dark rounded border border-gray-700">
-                <p className="text-gray-400 mb-1">Total Delay</p>
-                <p className="font-semibold text-white">{plan?.total_delay || '0'}m</p>
+              <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800/50">
+                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Cascaded</p>
+                <p className="text-lg font-black text-red-400">{plan?.total_delay || '0'}M</p>
               </div>
-              <div className="p-3 bg-aero-dark rounded border border-gray-700">
-                <p className="text-gray-400 mb-1">Score</p>
-                <p className="font-semibold text-aero-accent">{(plan?.score || 0).toFixed(2)}</p>
+              <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800/50">
+                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">K2 Score</p>
+                <p className="text-lg font-black text-cyan-400">{(plan?.score || 0).toFixed(1)}</p>
               </div>
-              <div className="p-3 bg-aero-dark rounded border border-gray-700">
-                <p className="text-gray-400 mb-1">Resource Util.</p>
-                <p className="font-semibold text-white">{(plan?.resource_utilization || 0).toFixed(0)}%</p>
+              <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800/50">
+                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Utility</p>
+                <p className="text-lg font-black text-white">{(plan?.resource_utilization || 0).toFixed(0)}%</p>
               </div>
             </div>
-            {plan?.task_timeline && (
-              <div className="p-3 bg-aero-dark rounded border border-gray-700">
-                <p className="text-gray-400 mb-2">Tasks ({plan.task_timeline.length})</p>
-                <div className="space-y-1">
-                  {plan.task_timeline.slice(0, 5).map(t => (
-                    <p key={t.task_id} className="text-xs text-gray-300">
-                      • {t.task_name} ({t.duration_minutes}m)
-                    </p>
-                  ))}
-                  {plan.task_timeline.length > 5 && (
-                    <p className="text-xs text-gray-500">+ {plan.task_timeline.length - 5} more tasks</p>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
     </div>
+  );
   );
 }

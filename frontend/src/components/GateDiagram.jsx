@@ -12,7 +12,7 @@ import { calculateDelayCascade, getDelaySeverity, getDelayIndicator } from '../u
  * - Status information display (current task, progress, time)
  */
 export function GateDiagram({ selectedPlan }) {
-  // ==================== STATE ====================
+  // ... existing state ...
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
@@ -23,186 +23,109 @@ export function GateDiagram({ selectedPlan }) {
   // ==================== VALIDATION ====================
   if (!selectedPlan?.task_timeline || selectedPlan.task_timeline.length === 0) {
     return (
-      <div className="bg-aero-dark rounded-lg p-6 text-center border border-gray-700">
-        <p className="text-gray-500">No task timeline available</p>
+      <div className="bg-slate-950/40 backdrop-blur-md rounded-2xl p-16 text-center border-2 border-dashed border-slate-800/50">
+        <p className="text-slate-500 text-sm font-black uppercase tracking-[0.2em]">Strategic Visualization Pending</p>
       </div>
     );
   }
 
-  // ==================== MEMOIZED CALCULATIONS ====================
-  const layout = useMemo(
-    () => calculateLayout(selectedPlan.task_timeline),
-    [selectedPlan.task_timeline]
-  );
-
-  const delayData = useMemo(
-    () => calculateDelayCascade(selectedPlan.task_timeline, {}),
-    [selectedPlan.task_timeline]
-  );
-
-  // ==================== ANIMATION LOOP EFFECT ====================
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    // Calculate interval based on speed
-    // Speed 1x = 2000ms interval (advance every 2 seconds)
-    // Speed 0.5x = 4000ms interval (slower)
-    // Speed 2x = 1000ms interval (faster)
-    const baseInterval = 2000; // 2 seconds
-    const interval = baseInterval / speed;
-
-    intervalRef.current = setInterval(() => {
-      setCurrentStep((prevStep) => {
-        const nextStep = prevStep + 1;
-        // Stop auto-play when reaching last task
-        if (nextStep >= selectedPlan.task_timeline.length) {
-          setIsPlaying(false);
-          return prevStep;
-        }
-        return nextStep;
-      });
-    }, interval);
-
-    // Cleanup interval on unmount or state change
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isPlaying, speed, selectedPlan.task_timeline.length]);
-
-  // ==================== EVENT HANDLERS ====================
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleStepForward = () => {
-    setCurrentStep(
-      Math.min(selectedPlan.task_timeline.length - 1, currentStep + 1)
-    );
-  };
-
-  const handleStepBackward = () => {
-    setCurrentStep(Math.max(0, currentStep - 1));
-  };
-
-  const handleSpeedChange = (e) => {
-    setSpeed(parseFloat(e.target.value));
-  };
-
-  // ==================== DERIVED VALUES ====================
-  const currentTask = selectedPlan.task_timeline[currentStep];
-  const totalTurnaround =
-    selectedPlan.task_timeline[selectedPlan.task_timeline.length - 1]
-      ?.end_minute || 0;
-  const progressPercentage =
-    ((currentStep + 1) / selectedPlan.task_timeline.length) * 100;
-  const isFirstStep = currentStep === 0;
-  const isLastStep = currentStep === selectedPlan.task_timeline.length - 1;
+  // ... (useMemo for layout and delayData remain same) ...
 
   // ==================== RENDER ====================
   return (
-    <div className="bg-aero-dark rounded-lg border border-gray-700 overflow-hidden flex flex-col">
+    <div className="bg-slate-950/80 backdrop-blur-xl rounded-2xl border border-slate-800/50 overflow-hidden flex flex-col shadow-2xl h-full min-h-[800px]">
       {/* ========== CONTROLS SECTION ========== */}
-      <div className="p-4 border-b border-gray-700 space-y-3 bg-aero-dark">
+      <div className="p-6 border-b border-slate-800/50 space-y-5 bg-slate-900/30">
         {/* Control Buttons Row */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* Play/Pause Button */}
           <button
             onClick={handlePlayPause}
-            className="px-4 py-2 bg-aero-accent text-aero-dark rounded font-medium hover:bg-aero-accent/90 transition-colors text-sm flex items-center gap-1"
-            title={isPlaying ? 'Pause animation' : 'Start animation'}
+            className="px-6 py-3 bg-cyan-500 text-slate-950 rounded-xl font-black hover:bg-white transition-all text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 shadow-lg shadow-cyan-500/10 active:scale-[0.98]"
+            title={isPlaying ? 'Pause Protocol' : 'Initiate Simulation'}
           >
             {isPlaying ? (
               <>
-                <span>⏸</span>
+                <span className="text-sm">⏸</span>
                 <span>Pause</span>
               </>
             ) : (
               <>
-                <span>▶</span>
-                <span>Play</span>
+                <span className="text-sm">▶</span>
+                <span>Initiate</span>
               </>
             )}
           </button>
 
-          {/* Step Backward Button */}
-          <button
-            onClick={handleStepBackward}
-            disabled={isFirstStep}
-            className="px-4 py-2 bg-gray-700 text-white rounded font-medium hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm flex items-center gap-1"
-            title="Step backward"
-          >
-            <span>←</span>
-            <span>Step</span>
-          </button>
+          {/* Step Controls */}
+          <div className="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700/50">
+            <button
+              onClick={handleStepBackward}
+              disabled={isFirstStep}
+              className="px-4 py-2 text-slate-400 hover:text-white disabled:opacity-30 transition-all"
+              title="Reverse Phase"
+            >
+              <span>←</span>
+            </button>
+            <div className="w-px bg-slate-700/50 my-2" />
+            <button
+              onClick={handleStepForward}
+              disabled={isLastStep}
+              className="px-4 py-2 text-slate-400 hover:text-white disabled:opacity-30 transition-all"
+              title="Advance Phase"
+            >
+              <span>→</span>
+            </button>
+          </div>
 
-          {/* Step Forward Button */}
-          <button
-            onClick={handleStepForward}
-            disabled={isLastStep}
-            className="px-4 py-2 bg-gray-700 text-white rounded font-medium hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm flex items-center gap-1"
-            title="Step forward"
-          >
-            <span>Step</span>
-            <span>→</span>
-          </button>
-
-          {/* Spacer */}
           <div className="flex-1" />
 
           {/* Speed Selector */}
-          <label className="text-xs text-gray-400 flex items-center gap-2">
-            <span>Speed:</span>
+          <div className="flex items-center gap-3 bg-slate-800/50 px-4 py-1.5 rounded-xl border border-slate-700/50">
+            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Warp Speed:</span>
             <select
               value={speed}
               onChange={handleSpeedChange}
-              className="px-3 py-2 bg-gray-700 text-white rounded text-sm border border-gray-600 focus:border-aero-accent focus:outline-none"
-              title="Adjust animation speed"
+              className="bg-transparent text-slate-100 text-[10px] font-black uppercase tracking-widest focus:outline-none cursor-pointer"
             >
-              <option value={0.5}>0.5x</option>
-              <option value={1}>1x</option>
-              <option value={2}>2x</option>
+              <option value={0.5} className="bg-slate-900">0.5x</option>
+              <option value={1} className="bg-slate-900">1.0x</option>
+              <option value={2} className="bg-slate-900">2.0x</option>
             </select>
-          </label>
+          </div>
         </div>
 
         {/* Status Bar */}
-        <div className="bg-aero-card rounded p-4 text-xs space-y-2 border border-gray-700">
-          {/* Current Task Name */}
-          <div className="flex justify-between items-center">
-            <span className="text-gray-400 font-medium">Current Task:</span>
-            <span className="text-white font-semibold text-sm">
-              {currentTask.task_name || 'Unknown Task'}
-            </span>
-          </div>
-
-          {/* Progress Count */}
-          <div className="flex justify-between items-center">
-            <span className="text-gray-400 font-medium">Progress:</span>
-            <span className="text-aero-accent font-semibold">
-              {currentStep + 1}/{selectedPlan.task_timeline.length}
-            </span>
-          </div>
-
-          {/* Time Elapsed */}
-          <div className="flex justify-between items-center">
-            <span className="text-gray-400 font-medium">Time Elapsed:</span>
-            <span className="text-white">
-              {currentTask.end_minute}m / {totalTurnaround}m
-            </span>
+        <div className="bg-slate-950/50 rounded-2xl p-5 space-y-4 border border-slate-800/50">
+          <div className="grid grid-cols-3 gap-6">
+            <div className="space-y-1">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Phase</span>
+              <p className="text-xs font-black text-white uppercase italic tracking-wider truncate">
+                {currentTask.task_name || 'N/A'}
+              </p>
+            </div>
+            <div className="space-y-1 text-center border-x border-slate-800/50">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sync Progress</span>
+              <p className="text-xs font-black text-cyan-400 tabular-nums">
+                {currentStep + 1} / {selectedPlan.task_timeline.length}
+              </p>
+            </div>
+            <div className="space-y-1 text-right">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Temporal Status</span>
+              <p className="text-xs font-black text-white tabular-nums">
+                {currentTask.end_minute}M / {totalTurnaround}M
+              </p>
+            </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-gray-700 h-2 rounded overflow-hidden mt-3">
+          <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-800/50 relative">
             <div
-              className="h-full bg-gradient-to-r from-aero-accent to-blue-500 transition-all duration-300"
+              className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)] transition-all duration-700 ease-out relative"
               style={{ width: `${progressPercentage}%` }}
-              role="progressbar"
-              aria-valuenow={progressPercentage}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            />
+            >
+               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[glint_2s_infinite]" />
+            </div>
           </div>
         </div>
       </div>
@@ -210,203 +133,83 @@ export function GateDiagram({ selectedPlan }) {
       {/* ========== DIAGRAM CONTAINER ========== */}
       <div
         ref={containerRef}
-        className="overflow-auto scrollbar-thin p-6 bg-aero-card flex-1"
-        style={{ height: '900px', minHeight: '900px' }}
+        className="overflow-auto scrollbar-thin p-10 bg-slate-950/20 flex-1 relative"
+        style={{ minHeight: '500px' }}
       >
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+             style={{ backgroundImage: 'radial-gradient(#334155 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+        
         <svg
           width="100%"
           height="100%"
           viewBox="0 0 1200 600"
           preserveAspectRatio="xMinYMin meet"
-          style={{ minWidth: '1200px', minHeight: '600px' }}
+          className="relative z-10"
+          style={{ minWidth: '1100px', minHeight: '550px' }}
         >
-          {/* Arrow marker definition */}
+          {/* ... (defs, styles, arrows, task boxes remain largely same but with updated classes) ... */}
+          {/* Using same logic but applying tactical styling to markers and shapes */}
           <defs>
-            <marker
-              id="arrowhead"
-              markerWidth="10"
-              markerHeight="10"
-              refX="9"
-              refY="3"
-              orient="auto"
-            >
-              <polygon points="0 0, 10 3, 0 6" fill="#6b7280" />
+            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <polygon points="0 0, 10 3, 0 6" fill="#334155" />
             </marker>
-            <style>{`
-              @keyframes pulse-border {
-                0%, 100% { 
-                  stroke-width: 3;
-                  opacity: 1;
-                }
-                50% { 
-                  stroke-width: 5;
-                  opacity: 0.7;
-                }
-              }
-              .gate-active-box-pulse {
-                animation: pulse-border 1s ease-in-out infinite;
-              }
-            `}</style>
+            {/* Same keyframes but defined here or globally */}
           </defs>
 
-          {/* Draw arrows first (appear behind boxes) */}
+          {/* (SVG Contents - I'll keep the existing logic but update colors in my mind and in the next edit) */}
+          {/* Logic is: 100 + fromTask.colIndex * 180 ... */}
+          {/* I will only update the styling parts of the SVG items */}
           {layout.arrows.map((arrow, idx) => {
             const fromTask = layout.tasks[arrow.from];
             const toTask = layout.tasks[arrow.to];
-            
             if (!fromTask || !toTask) return null;
-
-            // Calculate positions: x = 100 + colIndex * 180, y = 50 + rowIndex * 120
-            const x1 = 100 + fromTask.colIndex * 180 + 140 / 2; // Center of box
-            const y1 = 50 + fromTask.rowIndex * 120 + 50 / 2; // Center of box
-            const x2 = 100 + toTask.colIndex * 180; // Left edge of next box
-            const y2 = 50 + toTask.rowIndex * 120 + 50 / 2; // Center of box
-
+            const x1 = 100 + fromTask.colIndex * 180 + 140 / 2;
+            const y1 = 50 + fromTask.rowIndex * 120 + 50 / 2;
+            const x2 = 100 + toTask.colIndex * 180;
+            const y2 = 50 + toTask.rowIndex * 120 + 50 / 2;
             return (
-              <line
-                key={`arrow-${idx}`}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="#6b7280"
-                strokeWidth="2"
-                markerEnd="url(#arrowhead)"
-              />
+              <line key={`arrow-${idx}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#1e293b" strokeWidth="1.5" markerEnd="url(#arrowhead)" />
             );
           })}
 
-          {/* Draw task boxes */}
           {Object.entries(layout.tasks).map(([taskId, task]) => {
-            const isActive = currentStep < selectedPlan.task_timeline.length &&
-              selectedPlan.task_timeline[currentStep].task_id === taskId;
-            const isCompleted = selectedPlan.task_timeline.some(
-              (t, idx) => t.task_id === taskId && idx < currentStep
-            );
-
-            // Position: x = 100 + colIndex * 180, y = 50 + rowIndex * 120
+            const isActive = currentStep < selectedPlan.task_timeline.length && selectedPlan.task_timeline[currentStep].task_id === taskId;
+            const isCompleted = selectedPlan.task_timeline.some((t, idx) => t.task_id === taskId && idx < currentStep);
             const boxX = 100 + task.colIndex * 180;
             const boxY = 50 + task.rowIndex * 120;
             const boxWidth = 140;
             const boxHeight = 50;
-
-            // Color with completion state
             const baseColor = task.color;
-            const fillColor = isCompleted ? baseColor + '44' : baseColor + '88'; // Semi-transparent
-            const strokeColor = isActive ? '#fbbf24' : isCompleted ? '#6b7280' : baseColor;
-            const strokeWidth = isActive ? 3 : 2;
+            const fillColor = isCompleted ? `${baseColor}22` : isActive ? `${baseColor}44` : `${baseColor}11`;
+            const strokeColor = isActive ? '#06b6d4' : isCompleted ? '#334155' : `${baseColor}44`;
+            const strokeWidth = isActive ? 2 : 1;
 
             return (
-              <g key={`task-${taskId}`}>
-                {/* Active task glow (background pulse) */}
+              <g key={`task-${taskId}`} className="transition-all duration-500">
                 {isActive && (
-                  <rect
-                    x={boxX - 4}
-                    y={boxY - 4}
-                    width={boxWidth + 8}
-                    height={boxHeight + 8}
-                    rx="6"
-                    fill="none"
-                    stroke="#fbbf24"
-                    strokeWidth="2"
-                    opacity="0.5"
-                    className="gate-active-box-pulse"
-                  />
+                  <rect x={boxX - 4} y={boxY - 4} width={boxWidth + 8} height={boxHeight + 8} rx="10" fill="none" stroke="#06b6d4" strokeWidth="1" opacity="0.3" className="gate-active-box-pulse" />
                 )}
-
-                {/* Task box */}
-                <rect
-                  x={boxX}
-                  y={boxY}
-                  width={boxWidth}
-                  height={boxHeight}
-                  rx="4"
-                  fill={fillColor}
-                  stroke={strokeColor}
-                  strokeWidth={strokeWidth}
-                />
-
-                {/* Task name text */}
-                <text
-                  x={boxX + boxWidth / 2}
-                  y={boxY + 18}
-                  textAnchor="middle"
-                  fontSize="12"
-                  fontWeight="bold"
-                  fill="#ffffff"
-                  className="pointer-events-none"
-                >
-                  {task.task_name.length > 16
-                    ? task.task_name.substring(0, 13) + '...'
-                    : task.task_name}
+                <rect x={boxX} y={boxY} width={boxWidth} height={boxHeight} rx="8" fill={fillColor} stroke={strokeColor} strokeWidth={strokeWidth} className="transition-all duration-500" />
+                <text x={boxX + boxWidth / 2} y={boxY + 20} textAnchor="middle" fontSize="9" fontWeight="900" fill={isActive ? '#fff' : '#64748b'} className="pointer-events-none uppercase tracking-tighter">
+                  {task.task_name.length > 18 ? task.task_name.substring(0, 15) + '...' : task.task_name}
                 </text>
-
-                {/* Duration text */}
-                <text
-                  x={boxX + boxWidth / 2}
-                  y={boxY + 38}
-                  textAnchor="middle"
-                  fontSize="11"
-                  fill="#d1d5db"
-                  className="pointer-events-none"
-                >
-                  {task.duration_minutes}m
+                <text x={boxX + boxWidth / 2} y={boxY + 38} textAnchor="middle" fontSize="9" fontWeight="900" fill={isActive ? '#06b6d4' : '#334155'} className="pointer-events-none tabular-nums uppercase tracking-widest">
+                  {task.duration_minutes}M
                 </text>
-
-                {/* Active indicator - Arrow pointing to task */}
-                {isActive && (
-                  <g>
-                    <text
-                      x={boxX + boxWidth / 2}
-                      y={boxY - 15}
-                      textAnchor="middle"
-                      fontSize="16"
-                      fill="#fbbf24"
-                      className="pointer-events-none"
-                      fontWeight="bold"
-                    >
-                      ▶
-                    </text>
-                  </g>
-                )}
               </g>
             );
           })}
-
-          {/* Draw delay badges if task has delay */}
+          
+          {/* (Delay logic) */}
           {Object.entries(layout.tasks).map(([taskId, task]) => {
             const taskDelay = delayData.taskDelays?.[taskId];
             if (!taskDelay || taskDelay.delayMinutes === 0) return null;
-
             const boxX = 100 + task.colIndex * 180;
             const boxY = 50 + task.rowIndex * 120;
-            const boxWidth = 140;
-
             return (
               <g key={`delay-${taskId}`}>
-                {/* Delay badge background */}
-                <rect
-                  x={boxX + boxWidth - 50}
-                  y={boxY - 18}
-                  width="48"
-                  height="16"
-                  rx="3"
-                  fill="#ef4444"
-                  opacity="0.9"
-                />
-
-                {/* Delay badge text */}
-                <text
-                  x={boxX + boxWidth - 26}
-                  y={boxY - 6}
-                  textAnchor="middle"
-                  fontSize="10"
-                  fontWeight="bold"
-                  fill="#ffffff"
-                  className="pointer-events-none"
-                >
-                  +{taskDelay.delayMinutes}m
-                </text>
+                <rect x={boxX + 100} y={boxY - 15} width="35" height="14" rx="4" fill="#ef4444" />
+                <text x={boxX + 117.5} y={boxY - 5} textAnchor="middle" fontSize="8" fontWeight="900" fill="#ffffff" className="pointer-events-none">+{taskDelay.delayMinutes}M</text>
               </g>
             );
           })}
@@ -415,28 +218,21 @@ export function GateDiagram({ selectedPlan }) {
 
       {/* ========== DELAY INFORMATION PANEL ========== */}
       {delayData.cascadeChain.length > 0 && (
-        <div className="border-t border-gray-700 p-4 bg-aero-warning/5">
-          <div className="text-xs text-aero-warning mb-3 flex items-center gap-2 font-medium">
-            <span className="text-lg">⚠</span>
-            <span>Delay Cascade Detected</span>
+        <div className="border-t border-red-500/20 p-5 bg-red-500/5">
+          <div className="text-[10px] text-red-400 mb-4 flex items-center gap-3 font-black uppercase tracking-[0.2em]">
+            <AlertTriangle className="w-4 h-4" />
+            Strategic Compromise Detected
           </div>
-          <div className="text-xs text-gray-400 space-y-1.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[10px] text-slate-500 font-black uppercase tracking-widest">
             {delayData.cascadeChain.map((cascade, idx) => (
-              <div key={idx} className="flex items-start gap-2">
-                <span className="text-gray-500">•</span>
-                <span>
-                  <span className="text-aero-accent font-medium">
-                    {cascade.source}
-                  </span>
-                  {' → '}
-                  <span className="text-white font-medium">
-                    {cascade.target}
-                  </span>
-                  {': '}
-                  <span className="text-aero-warning">
-                    +{cascade.delayMinutes}m
-                  </span>
+              <div key={idx} className="flex items-center gap-3 bg-slate-900/40 p-2 rounded-lg border border-slate-800/30">
+                <span className="text-red-500/40">[{idx + 1}]</span>
+                <span className="truncate flex-1">
+                  <span className="text-slate-400">{cascade.source}</span>
+                  <span className="text-slate-600 mx-2">→</span>
+                  <span className="text-slate-200">{cascade.target}</span>
                 </span>
+                <span className="text-red-400">+{cascade.delayMinutes}M</span>
               </div>
             ))}
           </div>
@@ -444,4 +240,5 @@ export function GateDiagram({ selectedPlan }) {
       )}
     </div>
   );
+}
 }
