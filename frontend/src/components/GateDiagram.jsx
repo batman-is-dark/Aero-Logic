@@ -1,27 +1,31 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { AlertTriangle } from 'lucide-react';
-import { calculateLayout, getTaskColor, getTaskResource } from '../utils/gateLayoutEngine';
-import { calculateDelayCascade, getDelaySeverity, getDelayIndicator } from '../utils/delayCalculator';
+import { Play, Pause, SkipBack, SkipForward, Clock, Activity, Zap } from 'lucide-react';
 
-/**
- * GateDiagram Component
- * Main component that orchestrates the gate diagram visualization with:
- * - Animation state management (current step, playing, speed)
- * - Layout engine integration for task positioning
- * - Delay calculator integration for impact tracking
- * - Playback controls (play/pause/step/speed)
- * - Status information display (current task, progress, time)
- */
+const CATEGORY_COLORS = {
+  'Passenger': '#06b6d4',
+  'Fuel': '#f59e0b',
+  'Cargo': '#8b5cf6',
+  'Service': '#10b981',
+  'Ops': '#ec4899',
+};
+
+function categorizeTask(taskName) {
+  if (!taskName) return 'Ops';
+  const lower = String(taskName).toLowerCase();
+  if (lower.includes('boarding') || lower.includes('deplaning')) return 'Passenger';
+  if (lower.includes('fuel')) return 'Fuel';
+  if (lower.includes('cargo') || lower.includes('baggage')) return 'Cargo';
+  if (lower.includes('catering') || lower.includes('cleaning') || lower.includes('water')) return 'Service';
+  return 'Ops';
+}
+
 export function GateDiagram({ selectedPlan }) {
-  // ==================== STATE ====================
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
-  const [hoveredTask, setHoveredTask] = useState(null);
-  const containerRef = useRef(null);
   const intervalRef = useRef(null);
+  const scrollRef = useRef(null);
 
-  // ==================== VALIDATION ====================
   if (!selectedPlan?.task_timeline || selectedPlan.task_timeline.length === 0) {
     return (
       <div className="bg-slate-950/40 backdrop-blur-md rounded-2xl p-16 text-center border-2 border-dashed border-slate-800/50">
@@ -30,285 +34,210 @@ export function GateDiagram({ selectedPlan }) {
     );
   }
 
-  // ==================== MEMOIZED CALCULATIONS ====================
-  const layout = useMemo(
-    () => calculateLayout(selectedPlan.task_timeline),
-    [selectedPlan.task_timeline]
-  );
-
-  const delayData = useMemo(
-    () => calculateDelayCascade(selectedPlan.task_timeline, {}),
-    [selectedPlan.task_timeline]
-  );
-
-  // ==================== ANIMATION LOOP EFFECT ====================
+  const tasks = selectedPlan.task_timeline;
+  const maxTime = Math.max(...tasks.map(t => (t.start_minute || 0) + (t.duration_minutes || 0)), 0);
+  
+  // Animation effect
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
+    }
 
-    const baseInterval = 2000;
-    const interval = baseInterval / speed;
-
+    const interval = 2000 / speed;
     intervalRef.current = setInterval(() => {
-      setCurrentStep((prevStep) => {
-        const nextStep = prevStep + 1;
-        if (nextStep >= selectedPlan.task_timeline.length) {
+      setCurrentStep(prev => {
+        if (prev >= tasks.length - 1) {
           setIsPlaying(false);
-          return prevStep;
+          return prev;
         }
-        return nextStep;
+        return prev + 1;
       });
     }, interval);
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isPlaying, speed, selectedPlan.task_timeline.length]);
+  }, [isPlaying, speed, tasks.length]);
 
-  // ==================== EVENT HANDLERS ====================
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
+  // Auto-scroll to current task
+  useEffect(() => {
+    if (scrollRef.current) {
+      const activeElement = scrollRef.current.querySelector(`[data-step="${currentStep}"]`);
+      if (activeElement) {
+        activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentStep]);
 
-  const handleStepForward = () => {
-    setCurrentStep(
-      Math.min(selectedPlan.task_timeline.length - 1, currentStep + 1)
-    );
-  };
+  const handlePlayPause = () => setIsPlaying(!isPlaying);
+  const handleStepForward = () => setCurrentStep(Math.min(tasks.length - 1, currentStep + 1));
+  const handleStepBackward = () => setCurrentStep(Math.max(0, currentStep - 1));
 
-  const handleStepBackward = () => {
-    setCurrentStep(Math.max(0, currentStep - 1));
-  };
-
-  const handleSpeedChange = (e) => {
-    setSpeed(parseFloat(e.target.value));
-  };
-
-  // ==================== DERIVED VALUES ====================
-  const currentTask = selectedPlan.task_timeline[currentStep];
-  const totalTurnaround =
-    selectedPlan.task_timeline[selectedPlan.task_timeline.length - 1]
-      ?.end_minute || 0;
-  const progressPercentage =
-    ((currentStep + 1) / selectedPlan.task_timeline.length) * 100;
-  const isFirstStep = currentStep === 0;
-  const isLastStep = currentStep === selectedPlan.task_timeline.length - 1;
-
-  // ==================== RENDER ====================
   return (
-    <div className="bg-slate-950/80 backdrop-blur-xl rounded-2xl border border-slate-800/50 overflow-hidden flex flex-col shadow-2xl h-full min-h-[800px]">
-      {/* ========== CONTROLS SECTION ========== */}
-      <div className="p-6 border-b border-slate-800/50 space-y-5 bg-slate-900/30">
-        {/* Control Buttons Row */}
-        <div className="flex items-center gap-3">
-          {/* Play/Pause Button */}
+    <div className="bg-slate-950/80 backdrop-blur-xl rounded-2xl border border-slate-800/50 overflow-hidden flex flex-col">
+      {/* Controls */}
+      <div className="flex items-center justify-between p-4 border-b border-slate-800/50 bg-slate-900/30">
+        <div className="flex items-center gap-2">
           <button
             onClick={handlePlayPause}
-            className="px-6 py-3 bg-cyan-500 text-slate-950 rounded-xl font-black hover:bg-white transition-all text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 shadow-lg shadow-cyan-500/10 active:scale-[0.98]"
-            title={isPlaying ? 'Pause Protocol' : 'Initiate Simulation'}
+            className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-lg font-black text-xs uppercase tracking-wider transition-colors"
           >
-            {isPlaying ? (
-              <>
-                <span className="text-sm">⏸</span>
-                <span>Pause</span>
-              </>
-            ) : (
-              <>
-                <span className="text-sm">▶</span>
-                <span>Initiate</span>
-              </>
-            )}
+            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {isPlaying ? 'Pause' : 'Play'}
           </button>
-
-          {/* Step Controls */}
-          <div className="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700/50">
+          
+          <div className="flex bg-slate-800/50 rounded-lg p-1">
             <button
               onClick={handleStepBackward}
-              disabled={isFirstStep}
-              className="px-4 py-2 text-slate-400 hover:text-white disabled:opacity-30 transition-all"
-              title="Reverse Phase"
+              disabled={currentStep === 0}
+              className="px-3 py-1.5 text-slate-400 hover:text-white disabled:opacity-30 transition-colors"
             >
-              <span>←</span>
+              <SkipBack className="w-4 h-4" />
             </button>
-            <div className="w-px bg-slate-700/50 my-2" />
+            <div className="w-px bg-slate-700/50 my-1" />
             <button
               onClick={handleStepForward}
-              disabled={isLastStep}
-              className="px-4 py-2 text-slate-400 hover:text-white disabled:opacity-30 transition-all"
-              title="Advance Phase"
+              disabled={currentStep === tasks.length - 1}
+              className="px-3 py-1.5 text-slate-400 hover:text-white disabled:opacity-30 transition-colors"
             >
-              <span>→</span>
+              <SkipForward className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex-1" />
-
-          {/* Speed Selector */}
-          <div className="flex items-center gap-3 bg-slate-800/50 px-4 py-1.5 rounded-xl border border-slate-700/50">
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Warp Speed:</span>
-            <select
-              value={speed}
-              onChange={handleSpeedChange}
-              className="bg-transparent text-slate-100 text-[10px] font-black uppercase tracking-widest focus:outline-none cursor-pointer"
-            >
-              <option value={0.5} className="bg-slate-900">0.5x</option>
-              <option value={1} className="bg-slate-900">1.0x</option>
-              <option value={2} className="bg-slate-900">2.0x</option>
-            </select>
-          </div>
+          <select
+            value={speed}
+            onChange={(e) => setSpeed(parseFloat(e.target.value))}
+            className="bg-slate-800/50 text-slate-300 text-xs font-black uppercase px-3 py-1.5 rounded-lg border border-slate-700/50"
+          >
+            <option value={0.5}>0.5x</option>
+            <option value={1}>1x</option>
+            <option value={2}>2x</option>
+          </select>
         </div>
 
-        {/* Status Bar */}
-        <div className="bg-slate-950/50 rounded-2xl p-5 space-y-4 border border-slate-800/50">
-          <div className="grid grid-cols-3 gap-6">
-            <div className="space-y-1">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Phase</span>
-              <p className="text-xs font-black text-white uppercase italic tracking-wider truncate">
-                {currentTask?.task_name || 'N/A'}
-              </p>
-            </div>
-            <div className="space-y-1 text-center border-x border-slate-800/50">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sync Progress</span>
-              <p className="text-xs font-black text-cyan-400 tabular-nums">
-                {currentStep + 1} / {selectedPlan.task_timeline.length}
-              </p>
-            </div>
-            <div className="space-y-1 text-right">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Temporal Status</span>
-              <p className="text-xs font-black text-white tabular-nums">
-                {currentTask?.end_minute || 0}M / {totalTurnaround}M
-              </p>
-            </div>
+        <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-2 text-slate-400">
+            <Clock className="w-4 h-4" />
+            <span className="font-black uppercase tracking-wider">Step {currentStep + 1}/{tasks.length}</span>
           </div>
-
-          {/* Progress Bar */}
-          <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-800/50 relative">
-            <div
-              className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)] transition-all duration-700 ease-out relative"
-              style={{ width: `${progressPercentage}%` }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-glint" />
-            </div>
+          <div className="flex items-center gap-2 text-cyan-400">
+            <Zap className="w-4 h-4" />
+            <span className="font-black uppercase">{maxTime}m total</span>
           </div>
         </div>
       </div>
 
-      {/* ========== DIAGRAM CONTAINER ========== */}
-      <div
-        ref={containerRef}
-        className="overflow-auto scrollbar-thin p-6 bg-transparent flex-1 relative"
-        style={{ height: '500px', minHeight: '400px' }}
+      {/* Progress bar */}
+      <div className="h-1 bg-slate-900/50">
+        <div
+          className="h-full bg-cyan-500 transition-all duration-300"
+          style={{ width: `${((currentStep + 1) / tasks.length) * 100}%` }}
+        />
+      </div>
+
+      {/* Timeline Scroll Container */}
+      <div 
+        ref={scrollRef}
+        className="flex-1 overflow-auto p-4"
+        style={{ maxHeight: '500px' }}
       >
-        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 
-             style={{ backgroundImage: 'radial-gradient(#334155 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-        
-        <svg
-          width="100%"
-          height="100%"
-          viewBox="0 0 1200 500"
-          preserveAspectRatio="xMinYMin meet"
-          className="relative z-10"
-          style={{ minWidth: '1000px', minHeight: '400px' }}
-        >
-          <defs>
-            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-              <polygon points="0 0, 10 3, 0 6" fill="#475569" />
-            </marker>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
+        <div className="relative">
+          {/* Vertical timeline line */}
+          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-slate-800/50" />
 
-          {/* Draw arrows */}
-          {layout.arrows?.map((arrow, idx) => {
-            const fromTask = layout.tasks[arrow.from];
-            const toTask = layout.tasks[arrow.to];
-            if (!fromTask || !toTask) return null;
-            const x1 = 100 + fromTask.colIndex * 180 + 140 / 2;
-            const y1 = 50 + fromTask.rowIndex * 120 + 50 / 2;
-            const x2 = 100 + toTask.colIndex * 180;
-            const y2 = 50 + toTask.rowIndex * 120 + 50 / 2;
-            return (
-              <line key={`arrow-${idx}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#1e293b" strokeWidth="1.5" markerEnd="url(#arrowhead)" />
-            );
-          })}
+          {/* Tasks */}
+          <div className="space-y-2">
+            {tasks.map((task, idx) => {
+              const taskName = task.task_name || task.task || `Task ${task.task_id}`;
+              const category = categorizeTask(taskName);
+              const color = CATEGORY_COLORS[category] || CATEGORY_COLORS['Ops'];
+              const startMinute = task.start_minute || 0;
+              const duration = task.duration_minutes || 0;
+              const endMinute = startMinute + duration;
+              
+              const isActive = idx === currentStep;
+              const isCompleted = idx < currentStep;
+              const isFuture = idx > currentStep;
 
-          {/* Draw task boxes */}
-          {Object.entries(layout.tasks || {}).map(([taskId, task]) => {
-            const isActive = currentStep < selectedPlan.task_timeline.length && selectedPlan.task_timeline[currentStep].task_id === taskId;
-            const isCompleted = selectedPlan.task_timeline.some((t, idx) => t.task_id === taskId && idx < currentStep);
-            const boxX = 100 + task.colIndex * 180;
-            const boxY = 50 + task.rowIndex * 120;
-            const boxWidth = 140;
-            const boxHeight = 50;
-            const baseColor = task.color;
-            const fillColor = isCompleted ? baseColor : isActive ? baseColor : '#1e293b';
-            const strokeColor = isActive ? '#06b6d4' : isCompleted ? baseColor : '#475569';
-            const strokeWidth = isActive ? 2 : 1;
-            const textColor = isActive ? '#ffffff' : '#e2e8f0';
+              return (
+                <div
+                  key={idx}
+                  data-step={idx}
+                  className={`relative flex items-center gap-4 p-3 rounded-xl transition-all duration-300 ${
+                    isActive ? 'bg-cyan-500/10 border border-cyan-500/30' : 
+                    isCompleted ? 'bg-slate-900/30 border border-slate-800/30' : 
+                    'bg-slate-950/30 border border-transparent'
+                  }`}
+                >
+                  {/* Timeline dot */}
+                  <div 
+                    className={`relative z-10 w-4 h-4 rounded-full border-2 transition-all duration-300 ${
+                      isActive ? 'bg-cyan-500 border-cyan-400 scale-125 shadow-[0_0_15px_#06b6d4]' :
+                      isCompleted ? 'bg-green-500 border-green-400' :
+                      'bg-slate-800 border-slate-600'
+                    }`}
+                  >
+                    {isActive && (
+                      <div className="absolute inset-0 rounded-full animate-ping bg-cyan-400/50" />
+                    )}
+                  </div>
 
-            return (
-              <g key={`task-${taskId}`} className="transition-all duration-300" style={{ opacity: isCompleted ? 0.6 : 1 }}>
-                {isActive && (
-                  <rect x={boxX - 2} y={boxY - 2} width={boxWidth + 4} height={boxHeight + 4} rx="10" fill="none" stroke="#06b6d4" strokeWidth="2" className="animate-pulse" />
-                )}
-                <rect x={boxX} y={boxY} width={boxWidth} height={boxHeight} rx="6" fill={fillColor} stroke={strokeColor} strokeWidth={strokeWidth} />
-                <text x={boxX + boxWidth / 2} y={boxY + 20} textAnchor="middle" fontSize="8" fontWeight="800" fill={textColor} className="pointer-events-none uppercase tracking-tight">
-                  {task.task_name?.length > 18 ? task.task_name.substring(0, 15) + '...' : task.task_name}
-                </text>
-                <text x={boxX + boxWidth / 2} y={boxY + 36} textAnchor="middle" fontSize="8" fontWeight="700" fill={isActive ? '#06b6d4' : '#94a3b8'} className="pointer-events-none tabular-nums">
-                  {task.duration_minutes}m
-                </text>
-                {isCompleted && (
-                  <text x={boxX + boxWidth - 8} y={boxY + 12} fontSize="10" fill="#10b981" fontWeight="bold">✓</text>
-                )}
-              </g>
-            );
-          })}
-          
-          {/* Delay badges */}
-          {Object.entries(layout.tasks || {}).map(([taskId, task]) => {
-            const taskDelay = delayData.taskDelays?.[taskId];
-            if (!taskDelay || taskDelay.delayMinutes === 0) return null;
-            const boxX = 100 + task.colIndex * 180;
-            const boxY = 50 + task.rowIndex * 120;
-            return (
-              <g key={`delay-${taskId}`}>
-                <rect x={boxX + 100} y={boxY - 12} width="30" height="12" rx="3" fill="#dc2626" />
-                <text x={boxX + 115} y={boxY - 3} textAnchor="middle" fontSize="7" fontWeight="800" fill="#ffffff">+{taskDelay.delayMinutes}m</text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
+                  {/* Task info */}
+                  <div className="flex-1 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs font-black uppercase tracking-wider ${
+                        isActive ? 'text-cyan-400' : isCompleted ? 'text-slate-500 line-through' : 'text-slate-400'
+                      }`}>
+                        {taskName}
+                      </span>
+                      {task.parallel && (
+                        <span className="text-[8px] px-1.5 py-0.5 bg-purple-500/20 text-purple-400 rounded font-black uppercase">parallel</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 text-xs">
+                      <span className={`font-black tabular-nums ${
+                        isActive ? 'text-cyan-400' : 'text-slate-500'
+                      }`}>
+                        T+{startMinute}m → T+{endMinute}m
+                      </span>
+                      <span className={`font-black ${
+                        isActive ? 'text-cyan-400' : 'text-slate-600'
+                      }`}>
+                        {duration}m
+                      </span>
+                    </div>
+                  </div>
 
-      {/* ========== DELAY INFORMATION PANEL ========== */}
-      {delayData?.cascadeChain && delayData.cascadeChain.length > 0 && (
-        <div className="border-t border-red-500/20 p-5 bg-red-500/5">
-          <div className="text-[10px] text-red-400 mb-4 flex items-center gap-3 font-black uppercase tracking-[0.2em]">
-            <AlertTriangle className="w-4 h-4" />
-            Strategic Compromise Detected
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[10px] text-slate-500 font-black uppercase tracking-widest">
-            {delayData.cascadeChain.map((cascade, idx) => (
-              <div key={idx} className="flex items-center gap-3 bg-slate-900/40 p-2 rounded-lg border border-slate-800/30">
-                <span className="text-red-500/40">[{idx + 1}]</span>
-                <span className="truncate flex-1">
-                  <span className="text-slate-400">{cascade.source}</span>
-                  <span className="text-slate-600 mx-2">→</span>
-                  <span className="text-slate-200">{cascade.target}</span>
-                </span>
-                <span className="text-red-400">+{cascade.delayMinutes}M</span>
-              </div>
-            ))}
+                  {/* Color bar */}
+                  <div 
+                    className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                    style={{ backgroundColor: color }}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Current task highlight */}
+      <div className="p-4 border-t border-slate-800/50 bg-slate-900/30">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Current Operation</p>
+            <p className="text-sm font-bold text-white">
+              {tasks[currentStep]?.task_name || tasks[currentStep]?.task || 'Unknown'}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Time Window</p>
+            <p className="text-sm font-black text-cyan-400">
+              T+{tasks[currentStep]?.start_minute || 0}m - T+{(tasks[currentStep]?.start_minute || 0) + (tasks[currentStep]?.duration_minutes || 0)}m
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -29,14 +29,28 @@ export default function GanttTimeline({ plan }) {
     );
   }
 
-  const maxTime = Math.max(...plan.task_timeline.map(t => t.end_minute || 0), 90);
-  // Use responsive width - fit to container but allow overflow if needed
-  const timelineWidth = '100%';
-  const pixelsPerMinute = 10; // Fixed pixels per minute for consistency
+  // Calculate actual max time from task timeline
+  const maxEndTime = Math.max(...plan.task_timeline.map(t => {
+    const end = (t.start_minute || 0) + (t.duration_minutes || 0);
+    return end;
+  }), 0);
+  
+  // Add buffer (20%) for visual spacing
+  const maxTime = Math.ceil(maxEndTime * 1.2);
+  const pixelsPerMinute = 12; // Slightly wider for better visibility
+  
+  // Dynamic width based on actual timeline duration
+  const timelineWidth = Math.max(800, maxTime * pixelsPerMinute + 200);
+
+  // Generate time markers
+  const timeMarkers = [];
+  for (let t = 0; t <= maxTime + 15; t += 15) {
+    timeMarkers.push(t);
+  }
 
   return (
     <div className="bg-slate-950/80 backdrop-blur-xl rounded-2xl p-6 border border-slate-800/50 shadow-2xl overflow-x-auto">
-      <div className="min-w-[800px]" style={{ width: timelineWidth }}>
+      <div style={{ width: `${timelineWidth}px`, minWidth: `${timelineWidth}px` }}>
         {/* Header Legend */}
         <div className="flex gap-4 mb-6 pb-4 border-b border-slate-800/50 flex-wrap">
           {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
@@ -45,6 +59,9 @@ export default function GanttTimeline({ plan }) {
               <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.15em]">{cat}</span>
             </div>
           ))}
+          <div className="ml-auto text-[9px] font-black text-cyan-400 uppercase tracking-[0.15em]">
+            Total: {maxEndTime} min
+          </div>
         </div>
 
         {/* Tasks Grid */}
@@ -69,14 +86,14 @@ export default function GanttTimeline({ plan }) {
                   </p>
                 </div>
                 
-                <div className="relative h-4 bg-slate-900/50 rounded border border-slate-800/30 overflow-hidden">
+                <div className="relative h-5 bg-slate-900/50 rounded border border-slate-800/30 overflow-hidden">
                   <div
                     className="absolute h-full rounded-sm transition-all duration-500 ease-out group-hover:brightness-125"
                     style={{
                       left: `${startX}px`,
                       width: `${width}px`,
                       backgroundColor: color,
-                      boxShadow: `0 0 8px ${color}44`,
+                      boxShadow: `0 0 10px ${color}55`,
                     }}
                   />
                 </div>
@@ -89,13 +106,12 @@ export default function GanttTimeline({ plan }) {
         <div className="grid grid-cols-[140px_1fr] gap-4 mt-6 pt-4 border-t border-slate-800/50">
           <div />
           <div className="relative h-6">
-            {[0, 15, 30, 45, 60, 75, 90, 105, 120].map((time) => {
-              if (time > maxTime + 15) return null;
+            {timeMarkers.map((time) => {
               const x = time * pixelsPerMinute;
               return (
                 <div
                   key={time}
-                  className="absolute text-[8px] font-black text-slate-600 uppercase tracking-widest border-l border-slate-800/60 pl-1 h-4 flex items-end"
+                  className="absolute text-[8px] font-black text-slate-500 uppercase tracking-widest border-l border-slate-700/50 pl-1 h-5 flex items-end"
                   style={{ left: `${x}px` }}
                 >
                   T+{time}
