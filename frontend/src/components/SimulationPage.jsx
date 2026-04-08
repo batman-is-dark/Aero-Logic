@@ -37,37 +37,43 @@ export default function SimulationPage({ onBackToLanding }) {
   const k2Selection = optimizationResult?.selected_plan?.plan_id;
 
   return (
-    <div className="min-h-screen bg-[#060b13] text-white">
-      {/* Background Accent */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[50%] h-[30%] bg-aero-accent/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 left-0 w-[30%] h-[40%] bg-blue-500/5 blur-[100px] rounded-full" />
+    <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col font-sans overflow-x-hidden selection:bg-cyan-500/30">
+      {/* Enhanced Background with Brighter Blue Accents */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-cyan-600/15 blur-[160px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[140px] rounded-full" />
+        <div className="absolute top-[30%] left-[20%] w-[30%] h-[30%] bg-indigo-600/10 blur-[120px] rounded-full" />
+        <div className="absolute inset-0 opacity-[0.1]" 
+             style={{ backgroundImage: 'radial-gradient(#334155 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }} />
       </div>
 
       {/* Header */}
-      <header className="border-b border-gray-800 bg-[#060b13]/80 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-slate-800/50 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <button
               onClick={onBackToLanding}
-              className="p-2 hover:bg-white/5 rounded-full transition-colors text-gray-400 hover:text-white"
+              className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-white"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2">
-              <div className="bg-aero-accent p-1.5 rounded-lg">
-                <Plane className="w-5 h-5 text-[#060b13]" fill="currentColor" />
+            <div className="flex items-center gap-3">
+              <div className="bg-cyan-500 p-1.5 rounded-lg shadow-lg shadow-cyan-500/20">
+                <Plane className="w-5 h-5 text-slate-950" fill="currentColor" />
               </div>
               <div>
-                <span className="text-lg font-bold tracking-tight text-white uppercase">AERO-LOGIC</span>
-                <div className="text-[9px] text-aero-accent font-bold tracking-widest leading-none">SYSTEMS V2</div>
+                <span className="text-xl font-black tracking-tighter text-white uppercase italic">AERO-LOGIC</span>
+                <div className="text-[10px] text-cyan-400 font-black tracking-[0.3em] leading-none uppercase">Tactical Deck</div>
               </div>
             </div>
           </div>
           
-          <div className="hidden md:flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">K2 Think V2 Ready</span>
+          <div className="hidden md:flex items-center gap-4 bg-slate-900/50 border border-slate-800/50 px-5 py-2 rounded-full backdrop-blur-md">
+            <div className="relative">
+              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-ping absolute inset-0" />
+              <div className="w-2 h-2 bg-cyan-500 rounded-full relative" />
+            </div>
+            <span className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">K2 Ready System</span>
           </div>
         </div>
       </header>
