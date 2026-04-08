@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { calculateLayout, getTaskColor, getTaskResource } from '../utils/gateLayoutEngine';
 import { calculateDelayCascade, getDelaySeverity, getDelayIndicator } from '../utils/delayCalculator';
 
@@ -12,7 +13,7 @@ import { calculateDelayCascade, getDelaySeverity, getDelayIndicator } from '../u
  * - Status information display (current task, progress, time)
  */
 export function GateDiagram({ selectedPlan }) {
-  // ... existing state ...
+  // ==================== STATE ====================
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
@@ -29,7 +30,70 @@ export function GateDiagram({ selectedPlan }) {
     );
   }
 
-  // ... (useMemo for layout and delayData remain same) ...
+  // ==================== MEMOIZED CALCULATIONS ====================
+  const layout = useMemo(
+    () => calculateLayout(selectedPlan.task_timeline),
+    [selectedPlan.task_timeline]
+  );
+
+  const delayData = useMemo(
+    () => calculateDelayCascade(selectedPlan.task_timeline, {}),
+    [selectedPlan.task_timeline]
+  );
+
+  // ==================== ANIMATION LOOP EFFECT ====================
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const baseInterval = 2000;
+    const interval = baseInterval / speed;
+
+    intervalRef.current = setInterval(() => {
+      setCurrentStep((prevStep) => {
+        const nextStep = prevStep + 1;
+        if (nextStep >= selectedPlan.task_timeline.length) {
+          setIsPlaying(false);
+          return prevStep;
+        }
+        return nextStep;
+      });
+    }, interval);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isPlaying, speed, selectedPlan.task_timeline.length]);
+
+  // ==================== EVENT HANDLERS ====================
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleStepForward = () => {
+    setCurrentStep(
+      Math.min(selectedPlan.task_timeline.length - 1, currentStep + 1)
+    );
+  };
+
+  const handleStepBackward = () => {
+    setCurrentStep(Math.max(0, currentStep - 1));
+  };
+
+  const handleSpeedChange = (e) => {
+    setSpeed(parseFloat(e.target.value));
+  };
+
+  // ==================== DERIVED VALUES ====================
+  const currentTask = selectedPlan.task_timeline[currentStep];
+  const totalTurnaround =
+    selectedPlan.task_timeline[selectedPlan.task_timeline.length - 1]
+      ?.end_minute || 0;
+  const progressPercentage =
+    ((currentStep + 1) / selectedPlan.task_timeline.length) * 100;
+  const isFirstStep = currentStep === 0;
+  const isLastStep = currentStep === selectedPlan.task_timeline.length - 1;
 
   // ==================== RENDER ====================
   return (
@@ -101,7 +165,7 @@ export function GateDiagram({ selectedPlan }) {
             <div className="space-y-1">
               <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Phase</span>
               <p className="text-xs font-black text-white uppercase italic tracking-wider truncate">
-                {currentTask.task_name || 'N/A'}
+                {currentTask?.task_name || 'N/A'}
               </p>
             </div>
             <div className="space-y-1 text-center border-x border-slate-800/50">
@@ -113,7 +177,7 @@ export function GateDiagram({ selectedPlan }) {
             <div className="space-y-1 text-right">
               <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Temporal Status</span>
               <p className="text-xs font-black text-white tabular-nums">
-                {currentTask.end_minute}M / {totalTurnaround}M
+                {currentTask?.end_minute || 0}M / {totalTurnaround}M
               </p>
             </div>
           </div>
@@ -124,7 +188,7 @@ export function GateDiagram({ selectedPlan }) {
               className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)] transition-all duration-700 ease-out relative"
               style={{ width: `${progressPercentage}%` }}
             >
-               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[glint_2s_infinite]" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-glint" />
             </div>
           </div>
         </div>
@@ -147,19 +211,23 @@ export function GateDiagram({ selectedPlan }) {
           className="relative z-10"
           style={{ minWidth: '1100px', minHeight: '550px' }}
         >
-          {/* ... (defs, styles, arrows, task boxes remain largely same but with updated classes) ... */}
-          {/* Using same logic but applying tactical styling to markers and shapes */}
           <defs>
             <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
               <polygon points="0 0, 10 3, 0 6" fill="#334155" />
             </marker>
-            {/* Same keyframes but defined here or globally */}
+            <style>{`
+              @keyframes pulse-border {
+                0%, 100% { opacity: 1; stroke-width: 2; }
+                50% { opacity: 0.5; stroke-width: 4; }
+              }
+              .gate-active-box-pulse {
+                animation: pulse-border 1.5s ease-in-out infinite;
+              }
+            `}</style>
           </defs>
 
-          {/* (SVG Contents - I'll keep the existing logic but update colors in my mind and in the next edit) */}
-          {/* Logic is: 100 + fromTask.colIndex * 180 ... */}
-          {/* I will only update the styling parts of the SVG items */}
-          {layout.arrows.map((arrow, idx) => {
+          {/* Draw arrows */}
+          {layout.arrows?.map((arrow, idx) => {
             const fromTask = layout.tasks[arrow.from];
             const toTask = layout.tasks[arrow.to];
             if (!fromTask || !toTask) return null;
@@ -172,7 +240,8 @@ export function GateDiagram({ selectedPlan }) {
             );
           })}
 
-          {Object.entries(layout.tasks).map(([taskId, task]) => {
+          {/* Draw task boxes */}
+          {Object.entries(layout.tasks || {}).map(([taskId, task]) => {
             const isActive = currentStep < selectedPlan.task_timeline.length && selectedPlan.task_timeline[currentStep].task_id === taskId;
             const isCompleted = selectedPlan.task_timeline.some((t, idx) => t.task_id === taskId && idx < currentStep);
             const boxX = 100 + task.colIndex * 180;
@@ -191,7 +260,7 @@ export function GateDiagram({ selectedPlan }) {
                 )}
                 <rect x={boxX} y={boxY} width={boxWidth} height={boxHeight} rx="8" fill={fillColor} stroke={strokeColor} strokeWidth={strokeWidth} className="transition-all duration-500" />
                 <text x={boxX + boxWidth / 2} y={boxY + 20} textAnchor="middle" fontSize="9" fontWeight="900" fill={isActive ? '#fff' : '#64748b'} className="pointer-events-none uppercase tracking-tighter">
-                  {task.task_name.length > 18 ? task.task_name.substring(0, 15) + '...' : task.task_name}
+                  {task.task_name?.length > 18 ? task.task_name.substring(0, 15) + '...' : task.task_name}
                 </text>
                 <text x={boxX + boxWidth / 2} y={boxY + 38} textAnchor="middle" fontSize="9" fontWeight="900" fill={isActive ? '#06b6d4' : '#334155'} className="pointer-events-none tabular-nums uppercase tracking-widest">
                   {task.duration_minutes}M
@@ -200,8 +269,8 @@ export function GateDiagram({ selectedPlan }) {
             );
           })}
           
-          {/* (Delay logic) */}
-          {Object.entries(layout.tasks).map(([taskId, task]) => {
+          {/* Delay badges */}
+          {Object.entries(layout.tasks || {}).map(([taskId, task]) => {
             const taskDelay = delayData.taskDelays?.[taskId];
             if (!taskDelay || taskDelay.delayMinutes === 0) return null;
             const boxX = 100 + task.colIndex * 180;
@@ -217,7 +286,7 @@ export function GateDiagram({ selectedPlan }) {
       </div>
 
       {/* ========== DELAY INFORMATION PANEL ========== */}
-      {delayData.cascadeChain.length > 0 && (
+      {delayData?.cascadeChain && delayData.cascadeChain.length > 0 && (
         <div className="border-t border-red-500/20 p-5 bg-red-500/5">
           <div className="text-[10px] text-red-400 mb-4 flex items-center gap-3 font-black uppercase tracking-[0.2em]">
             <AlertTriangle className="w-4 h-4" />
