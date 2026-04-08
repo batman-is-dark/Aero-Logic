@@ -91,13 +91,12 @@ export default function PlanCard({ plan, isSelected, isK2Recommended, onSelect }
             <div className="flex items-baseline gap-1">
               <p className="text-2xl font-black tracking-tighter text-white">
                 {(() => {
-                  // Calculate from actual timeline if turnaround_time is missing or invalid
-                  const tt = plan.turnaround_time;
-                  if (typeof tt === 'number' && tt > 0) return tt;
+                  // ALWAYS calculate from actual timeline to get different values per plan
                   const timeline = plan.task_timeline || plan.timeline || [];
-                  const maxEnd = timeline.reduce((max, t) => {
-                    const end = (t.start_minute || t.start_min || 0) + (t.duration_minutes || t.duration_min || 0);
-                    return Math.max(max, end);
+                  const maxEnd = timeline.reduce((max, t, i) => {
+                    const start = t.start_minute ?? t.start_min ?? t.start ?? 0;
+                    const duration = t.duration_minutes ?? t.duration_min ?? t.duration ?? 0;
+                    return Math.max(max, start + duration);
                   }, 0);
                   return maxEnd > 0 ? maxEnd : 70;
                 })()}
@@ -112,7 +111,18 @@ export default function PlanCard({ plan, isSelected, isK2Recommended, onSelect }
             </p>
             <div className="flex items-baseline gap-1">
               <p className="text-2xl font-black tracking-tighter text-white">
-                {plan.apu_tasks || '3/10'}
+                {(() => {
+                  // Calculate APU tasks based on actual timeline and parallel tasks
+                  const timeline = plan.task_timeline || plan.timeline || [];
+                  const totalTasks = timeline.length;
+                  const parallelTasks = timeline.filter(t => t.parallel === true || t.parallel === 'true').length;
+                  // Estimate APU usage: tasks that typically need APU (fuel, some services)
+                  const apuTasks = timeline.filter(t => {
+                    const name = (t.task_name || t.task || '').toLowerCase();
+                    return name.includes('fuel') || name.includes('boarding') || name.includes('cleaning') || name.includes('catering');
+                  }).length;
+                  return `${apuTasks}/${totalTasks}`;
+                })()}
               </p>
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active</span>
             </div>
