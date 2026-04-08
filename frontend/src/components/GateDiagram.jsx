@@ -197,8 +197,8 @@ export function GateDiagram({ selectedPlan }) {
       {/* ========== DIAGRAM CONTAINER ========== */}
       <div
         ref={containerRef}
-        className="overflow-auto scrollbar-thin p-10 bg-slate-950/20 flex-1 relative"
-        style={{ minHeight: '500px' }}
+        className="overflow-auto scrollbar-thin p-8 bg-slate-950/20 flex-1 relative"
+        style={{ height: '500px', minHeight: '400px' }}
       >
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: 'radial-gradient(#334155 1px, transparent 1px)', backgroundSize: '30px 30px' }} />

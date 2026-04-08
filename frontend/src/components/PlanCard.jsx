@@ -59,55 +59,55 @@ export default function PlanCard({ plan, isSelected, isK2Recommended, onSelect }
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-y-5 gap-x-8 mb-8">
-        <div className="space-y-1.5">
-          <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2">
-            <Clock className="w-3.5 h-3.5 text-cyan-500/70" /> Delay Delta
-          </p>
-          <div className="flex items-baseline gap-1">
-            <p className={`text-2xl font-black tracking-tighter ${plan.total_delay === 0 ? 'text-cyan-400' : 'text-white'}`}>
-              +{plan.total_delay || '0'}
+        <div className="grid grid-cols-2 gap-y-5 gap-x-8 mb-8">
+          <div className="space-y-1.5">
+            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-cyan-500/70" /> Delay Delta
             </p>
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">min</span>
+            <div className="flex items-baseline gap-1">
+              <p className={`text-2xl font-black tracking-tighter ${(plan.total_delay || plan.total_delay_minutes) === 0 ? 'text-cyan-400' : 'text-white'}`}>
+                +{plan.total_delay ?? plan.total_delay_minutes ?? 0}
+              </p>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">min</span>
+            </div>
           </div>
-        </div>
-        
-        <div className="space-y-1.5">
-          <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2">
-            <Zap className="w-3.5 h-3.5 text-cyan-500/70" /> APU Active
-          </p>
-          <div className="flex items-baseline gap-1">
-            <p className="text-2xl font-black tracking-tighter text-white">
-              {plan.apu_usage || (Math.floor(Math.random() * 40) + 5)}
+          
+          <div className="space-y-1.5">
+            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2">
+              <Zap className="w-3.5 h-3.5 text-cyan-500/70" /> APU Active
             </p>
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">min</span>
+            <div className="flex items-baseline gap-1">
+              <p className="text-2xl font-black tracking-tighter text-white">
+                {plan.apu_usage ?? plan.apu_usage_minutes ?? 0}
+              </p>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">min</span>
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-1.5">
-          <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2">
-            <Target className="w-3.5 h-3.5 text-cyan-500/70" /> Turnaround
-          </p>
-          <div className="flex items-baseline gap-1">
-            <p className="text-2xl font-black tracking-tighter text-white">
-              {plan.turnaround_time || '70'}
+          <div className="space-y-1.5">
+            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2">
+              <Target className="w-3.5 h-3.5 text-cyan-500/70" /> Turnaround
             </p>
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">min</span>
+            <div className="flex items-baseline gap-1">
+              <p className="text-2xl font-black tracking-tighter text-white">
+                {plan.turnaround_time ?? 60}
+              </p>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">min</span>
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-1.5">
-          <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2">
-            <Star className="w-3.5 h-3.5 text-cyan-400" /> APU Ratio
-          </p>
-          <div className="flex items-baseline gap-1">
-            <p className="text-2xl font-black tracking-tighter text-white">
-              {plan.apu_tasks || '1/8'}
+          <div className="space-y-1.5">
+            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2">
+              <Star className="w-3.5 h-3.5 text-cyan-400" /> APU Tasks
             </p>
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tasks</span>
+            <div className="flex items-baseline gap-1">
+              <p className="text-2xl font-black tracking-tighter text-white">
+                {plan.apu_tasks || '3/10'}
+              </p>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active</span>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Task Sequence Hint */}
       <div className="space-y-3 pt-5 border-t border-slate-800/50">

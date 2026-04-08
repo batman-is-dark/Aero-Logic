@@ -45,19 +45,26 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
     plan_c_fuel = int(base["fuel_rate"] * base["base_turnaround"] / 60 * 1.0)
     plan_c_ontime = round(min(0.85, max(0.5, 0.65 - (weather_factor - 1) * 0.2)), 2)
     
+    plan_a_timeline = _generate_timeline(base["base_turnaround"], strategy="delay")
+    plan_a_turnaround = _calculate_turnaround_time(plan_a_timeline)
+    
     plan_a = {
         "plan_id": "A",
         "strategy": "Delay-Minimizing",
         "total_delay": plan_a_delay,
         "total_delay_minutes": plan_a_delay,
+        "turnaround_time": plan_a_turnaround,
         "apu_usage": plan_a_apu,
         "apu_usage_minutes": plan_a_apu,
+        "apu_tasks": _calculate_apu_tasks(plan_a_apu, plan_a_turnaround),
+        "score": _calculate_score({"total_delay_minutes": plan_a_delay, "fuel_cost_estimate_usd": plan_a_fuel, "on_time_probability": plan_a_ontime}, base["base_turnaround"]),
+        "resource_utilization": _calculate_resource_utilization(plan_a_turnaround, plan_a_apu),
         "ground_power_used": ground_power and random.random() < 0.2,
         "on_time_probability": plan_a_ontime,
         "on_time_percentage": plan_a_ontime,
         "fuel_cost": plan_a_fuel,
         "fuel_cost_estimate_usd": plan_a_fuel,
-        "timeline": _generate_timeline(base["base_turnaround"], strategy="delay"),
+        "timeline": plan_a_timeline,
         "reasoning": (
             f"Strategy A prioritizes punctuality for {aircraft}. Uses aggressive parallel operations "
             f"and {'continuous APU' if not ground_power else 'hybrid power'} to minimize turnaround. "
@@ -69,19 +76,26 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
         },
     }
     
+    plan_b_timeline = _generate_timeline(int(base["base_turnaround"] * 1.4), strategy="fuel")
+    plan_b_turnaround = _calculate_turnaround_time(plan_b_timeline)
+    
     plan_b = {
         "plan_id": "B",
         "strategy": "Fuel-Minimizing",
         "total_delay": plan_b_delay,
         "total_delay_minutes": plan_b_delay,
+        "turnaround_time": plan_b_turnaround,
         "apu_usage": plan_b_apu,
         "apu_usage_minutes": plan_b_apu,
+        "apu_tasks": _calculate_apu_tasks(plan_b_apu, plan_b_turnaround),
+        "score": _calculate_score({"total_delay_minutes": plan_b_delay, "fuel_cost_estimate_usd": plan_b_fuel, "on_time_probability": plan_b_ontime}, base["base_turnaround"]),
+        "resource_utilization": _calculate_resource_utilization(plan_b_turnaround, plan_b_apu),
         "ground_power_used": True,
         "on_time_probability": plan_b_ontime,
         "on_time_percentage": plan_b_ontime,
         "fuel_cost": plan_b_fuel,
         "fuel_cost_estimate_usd": plan_b_fuel,
-        "timeline": _generate_timeline(int(base["base_turnaround"] * 1.4), strategy="fuel"),
+        "timeline": plan_b_timeline,
         "reasoning": (
             f"Strategy B minimizes fuel for {aircraft}. Uses ground power exclusively, "
             f"sequential operations to reduce APU runtime to {plan_b_apu} min. "
@@ -93,19 +107,26 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
         },
     }
     
+    plan_c_timeline = _generate_timeline(int(base["base_turnaround"] * 1.2), strategy="balanced")
+    plan_c_turnaround = _calculate_turnaround_time(plan_c_timeline)
+    
     plan_c = {
         "plan_id": "C",
         "strategy": "Balanced",
         "total_delay": plan_c_delay,
         "total_delay_minutes": plan_c_delay,
+        "turnaround_time": plan_c_turnaround,
         "apu_usage": plan_c_apu,
         "apu_usage_minutes": plan_c_apu,
+        "apu_tasks": _calculate_apu_tasks(plan_c_apu, plan_c_turnaround),
+        "score": _calculate_score({"total_delay_minutes": plan_c_delay, "fuel_cost_estimate_usd": plan_c_fuel, "on_time_probability": plan_c_ontime}, base["base_turnaround"]),
+        "resource_utilization": _calculate_resource_utilization(plan_c_turnaround, plan_c_apu),
         "ground_power_used": ground_power,
         "on_time_probability": plan_c_ontime,
         "on_time_percentage": plan_c_ontime,
         "fuel_cost": plan_c_fuel,
         "fuel_cost_estimate_usd": plan_c_fuel,
-        "timeline": _generate_timeline(int(base["base_turnaround"] * 1.2), strategy="balanced"),
+        "timeline": plan_c_timeline,
         "reasoning": (
             f"Strategy C balances delay and fuel for {aircraft}. Selective parallel operations, "
             f"moderate APU ({plan_c_apu} min), ground power when available. "
@@ -140,10 +161,16 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
         },
         "selected_plan": {
             "plan_id": selected_id,
+            "reasoning": (
+                f"Plan {selected_id} selected for {aircraft} at {base_scenario.get('gate', 'TBD')}. "
+                + _get_selection_justification(selected_id, base_scenario, plan_a, plan_b, plan_c)
+            ),
             "justification": (
                 f"Plan {selected_id} selected for {aircraft} at {base_scenario.get('gate', 'TBD')}. "
                 + _get_selection_justification(selected_id, base_scenario, plan_a, plan_b, plan_c)
             ),
+            "score": selected_plan.get("score", 75.0),
+            "resource_utilization": selected_plan.get("resource_utilization", 70.0),
             "ai_optimizer_agreement": True,
             "ai_optimizer_explanation": (
                 f"K2 selects Plan {selected_id} based on counterfactual analysis. "
@@ -152,6 +179,47 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
             ),
         },
     }
+
+
+def _calculate_turnaround_time(timeline: list) -> int:
+    """Calculate total turnaround time from timeline (last task end time)."""
+    if not timeline:
+        return 60
+    max_end = 0
+    for task in timeline:
+        task_end = task.get("start_min", 0) + task.get("duration_min", 0)
+        if task_end > max_end:
+            max_end = task_end
+    return max(max_end, 30)
+
+
+def _calculate_apu_tasks(apu_usage: int, turnaround: int) -> str:
+    """Calculate APU tasks ratio as fraction."""
+    if turnaround <= 0:
+        return "0/11"
+    tasks_with_apu = min(8, max(1, int((apu_usage / turnaround) * 10)))
+    return f"{tasks_with_apu}/10"
+
+
+def _calculate_score(plan: Dict, base_turnaround: int) -> float:
+    """Calculate K2 score based on plan metrics."""
+    delay = plan.get("total_delay_minutes", 15)
+    fuel = plan.get("fuel_cost_estimate_usd", 100)
+    on_time = plan.get("on_time_probability", 0.7)
+    
+    # Weighted score: lower delay, lower fuel, higher on-time = better
+    delay_score = max(0, 100 - delay * 2)
+    fuel_score = max(0, 100 - fuel / 10)
+    on_time_score = on_time * 100
+    
+    return (delay_score * 0.4 + fuel_score * 0.2 + on_time_score * 0.4)
+
+
+def _calculate_resource_utilization(turnaround: int, apu_usage: int) -> float:
+    """Calculate resource utilization percentage."""
+    if turnaround <= 0:
+        return 0
+    return min(95, (turnaround - apu_usage) / turnaround * 100)
 
 
 def _generate_timeline(base_duration: int, strategy: str = "balanced") -> list:

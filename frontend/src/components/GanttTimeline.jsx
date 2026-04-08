@@ -30,62 +30,55 @@ export default function GanttTimeline({ plan }) {
   }
 
   const maxTime = Math.max(...plan.task_timeline.map(t => t.end_minute || 0), 90);
-  const timelineWidth = 1000;
-  const pixelsPerMinute = timelineWidth / maxTime;
+  // Use responsive width - fit to container but allow overflow if needed
+  const timelineWidth = '100%';
+  const pixelsPerMinute = 10; // Fixed pixels per minute for consistency
 
   return (
-    <div className="bg-slate-950/80 backdrop-blur-xl rounded-2xl p-8 border border-slate-800/50 shadow-2xl overflow-x-auto scrollbar-thin">
-      <div className="min-w-[1100px] space-y-3">
+    <div className="bg-slate-950/80 backdrop-blur-xl rounded-2xl p-6 border border-slate-800/50 shadow-2xl overflow-x-auto">
+      <div className="min-w-[800px]" style={{ width: timelineWidth }}>
         {/* Header Legend */}
-        <div className="flex gap-6 mb-12 pb-8 border-b border-slate-800/50">
+        <div className="flex gap-4 mb-6 pb-4 border-b border-slate-800/50 flex-wrap">
           {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
-            <div key={cat} className="flex items-center gap-3">
-              <div className="w-2.5 h-2.5 rounded-sm rotate-45" style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}44` }} />
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{cat}</span>
+            <div key={cat} className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: color }} />
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.15em]">{cat}</span>
             </div>
           ))}
         </div>
 
         {/* Tasks Grid */}
-        <div className="space-y-5">
+        <div className="space-y-3">
           {plan.task_timeline.map((task) => {
-            // Get task name and provide fallback
             const taskName = task.task_name || task.task || `Task ${task.task_id}`;
-            
-            // Categorize the task
             const category = categorizeTask(taskName);
             const color = CATEGORY_COLORS[category] || CATEGORY_COLORS['Ops'];
-            
-            // Calculate position and width
             const startMinute = task.start_minute || 0;
             const durationMinutes = task.duration_minutes || 0;
             const startX = startMinute * pixelsPerMinute;
-            const width = Math.max(durationMinutes * pixelsPerMinute, 40);
+            const width = Math.max(durationMinutes * pixelsPerMinute, 30);
 
             return (
-              <div key={task.task_id} className="grid grid-cols-[180px_1fr] items-center gap-8 group">
+              <div key={task.task_id} className="grid grid-cols-[140px_1fr] items-center gap-4 group">
                 <div className="text-right">
-                  <p className="text-[11px] font-black text-slate-300 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">
+                  <p className="text-[10px] font-bold text-slate-300 group-hover:text-cyan-400 transition-colors uppercase truncate">
                     {taskName}
                   </p>
-                  <p className="text-[9px] text-slate-600 font-black uppercase tracking-[0.2em] mt-0.5">
-                    {durationMinutes || 0} MIN OPS
+                  <p className="text-[8px] text-slate-600 font-black uppercase tracking-[0.15em]">
+                    {durationMinutes || 0}m
                   </p>
                 </div>
                 
-                <div className="relative h-5 bg-slate-900/50 rounded-md border border-slate-800/30 overflow-hidden shadow-inner">
+                <div className="relative h-4 bg-slate-900/50 rounded border border-slate-800/30 overflow-hidden">
                   <div
-                    className="absolute h-full rounded-sm shadow-lg transition-all duration-700 ease-out group-hover:brightness-125 relative overflow-hidden"
+                    className="absolute h-full rounded-sm transition-all duration-500 ease-out group-hover:brightness-125"
                     style={{
                       left: `${startX}px`,
                       width: `${width}px`,
                       backgroundColor: color,
-                      boxShadow: `0 0 20px ${color}33`,
+                      boxShadow: `0 0 8px ${color}44`,
                     }}
-                  >
-                    {/* Progress Shimmer/Glint effect could go here in CSS */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[glint_3s_infinite]" />
-                  </div>
+                  />
                 </div>
               </div>
             );
@@ -93,19 +86,19 @@ export default function GanttTimeline({ plan }) {
         </div>
 
         {/* Time Axis at Bottom */}
-        <div className="grid grid-cols-[180px_1fr] gap-8 mt-10 pt-6 border-t border-slate-800/50">
+        <div className="grid grid-cols-[140px_1fr] gap-4 mt-6 pt-4 border-t border-slate-800/50">
           <div />
-          <div className="relative h-8">
-            {[0, 15, 30, 45, 60, 75, 90].map((time) => {
-              if (time > maxTime) return null;
+          <div className="relative h-6">
+            {[0, 15, 30, 45, 60, 75, 90, 105, 120].map((time) => {
+              if (time > maxTime + 15) return null;
               const x = time * pixelsPerMinute;
               return (
                 <div
                   key={time}
-                  className="absolute text-[9px] font-black text-slate-600 uppercase tracking-widest border-l border-slate-800/80 pl-2 h-4 flex items-end"
+                  className="absolute text-[8px] font-black text-slate-600 uppercase tracking-widest border-l border-slate-800/60 pl-1 h-4 flex items-end"
                   style={{ left: `${x}px` }}
                 >
-                  T+{time}M
+                  T+{time}
                 </div>
               );
             })}
