@@ -139,5 +139,4 @@ export default function PlanCard({ plan, isSelected, isK2Recommended, onSelect }
       </div>
     </div>
   );
-  );
 }
