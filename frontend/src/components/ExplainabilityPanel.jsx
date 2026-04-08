@@ -96,5 +96,4 @@ export default function ExplainabilityPanel({ plan, k2Selection, allPlans }) {
       </div>
     </div>
   );
-  );
 }
