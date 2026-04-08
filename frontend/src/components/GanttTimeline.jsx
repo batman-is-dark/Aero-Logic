@@ -64,38 +64,49 @@ export default function GanttTimeline({ plan }) {
           </div>
         </div>
 
-        {/* Tasks Grid */}
-        <div className="space-y-3">
-          {plan.task_timeline.map((task) => {
-            const taskName = task.task_name || task.task || `Task ${task.task_id}`;
+        {/* Tasks Grid - Each task gets its own row */}
+        <div className="space-y-2">
+          {plan.task_timeline.map((task, idx) => {
+            const taskName = task.task_name || task.task || `Task ${idx}`;
             const category = categorizeTask(taskName);
             const color = CATEGORY_COLORS[category] || CATEGORY_COLORS['Ops'];
-            const startMinute = task.start_minute || 0;
-            const durationMinutes = task.duration_minutes || 0;
+            const startMinute = task.start_minute ?? task.start_min ?? 0;
+            const durationMinutes = task.duration_minutes ?? task.duration_min ?? 0;
+            const endMinute = startMinute + durationMinutes;
             const startX = startMinute * pixelsPerMinute;
-            const width = Math.max(durationMinutes * pixelsPerMinute, 30);
+            const width = Math.max(durationMinutes * pixelsPerMinute, 25);
 
             return (
-              <div key={task.task_id} className="grid grid-cols-[140px_1fr] items-center gap-4 group">
-                <div className="text-right">
-                  <p className="text-[10px] font-bold text-slate-300 group-hover:text-cyan-400 transition-colors uppercase truncate">
+              <div key={task.task_id ?? idx} className="grid grid-cols-[150px_1fr] items-center gap-4 group">
+                <div className="text-right flex flex-col items-end">
+                  <p className="text-[10px] font-bold text-slate-300 group-hover:text-cyan-400 transition-colors uppercase truncate max-w-[140px]" title={taskName}>
                     {taskName}
                   </p>
-                  <p className="text-[8px] text-slate-600 font-black uppercase tracking-[0.15em]">
-                    {durationMinutes || 0}m
+                  <p className="text-[8px] text-slate-500 font-black uppercase tracking-[0.1em]">
+                    {startMinute}-{endMinute}m ({durationMinutes}m)
                   </p>
                 </div>
                 
-                <div className="relative h-5 bg-slate-900/50 rounded border border-slate-800/30 overflow-hidden">
+                <div className="relative h-6 bg-slate-900/50 rounded border border-slate-800/30 overflow-visible">
                   <div
-                    className="absolute h-full rounded-sm transition-all duration-500 ease-out group-hover:brightness-125"
+                    className="absolute h-full rounded-sm transition-all duration-300 group-hover:brightness-125"
                     style={{
                       left: `${startX}px`,
                       width: `${width}px`,
                       backgroundColor: color,
-                      boxShadow: `0 0 10px ${color}55`,
+                      boxShadow: `0 0 8px ${color}66`,
+                      minWidth: '4px',
                     }}
                   />
+                  {/* Show time markers on the bar for very short durations */}
+                  {durationMinutes > 0 && (
+                    <span 
+                      className="absolute top-1/2 -translate-y-1/2 text-[6px] font-black text-slate-900/70 pointer-events-none"
+                      style={{ left: `${startX + width/2}px`, transform: 'translate(-50%, -50%)' }}
+                    >
+                      {durationMinutes}m
+                    </span>
+                  )}
                 </div>
               </div>
             );
