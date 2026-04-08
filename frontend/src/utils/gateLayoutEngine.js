@@ -95,13 +95,19 @@ export function getTaskDef(taskId) {
     return DEFAULT_TASK;
   }
 
+  // Ensure taskId is a string
+  const stringTaskId = String(taskId).trim();
+  if (!stringTaskId) {
+    return DEFAULT_TASK;
+  }
+
   // Try direct match first
-  if (TASK_LIBRARY[taskId]) {
-    return TASK_LIBRARY[taskId];
+  if (TASK_LIBRARY[stringTaskId]) {
+    return TASK_LIBRARY[stringTaskId];
   }
 
   // Try case-insensitive
-  const lowerTaskId = taskId.toLowerCase();
+  const lowerTaskId = stringTaskId.toLowerCase();
   const directLowerMatch = Object.entries(TASK_LIBRARY).find(
     ([key]) => key.toLowerCase() === lowerTaskId
   );
@@ -110,7 +116,7 @@ export function getTaskDef(taskId) {
   }
 
   // Try slug normalization (kebab-case to underscore)
-  const normalizedId = taskId.replace(/-/g, '_').toLowerCase();
+  const normalizedId = stringTaskId.replace(/-/g, '_').toLowerCase();
   const normalizedMatch = Object.entries(TASK_LIBRARY).find(
     ([key]) => key.toLowerCase() === normalizedId
   );
