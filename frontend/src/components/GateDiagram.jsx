@@ -197,33 +197,31 @@ export function GateDiagram({ selectedPlan }) {
       {/* ========== DIAGRAM CONTAINER ========== */}
       <div
         ref={containerRef}
-        className="overflow-auto scrollbar-thin p-8 bg-slate-950/20 flex-1 relative"
+        className="overflow-auto scrollbar-thin p-6 bg-transparent flex-1 relative"
         style={{ height: '500px', minHeight: '400px' }}
       >
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-             style={{ backgroundImage: 'radial-gradient(#334155 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 
+             style={{ backgroundImage: 'radial-gradient(#334155 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         
         <svg
           width="100%"
           height="100%"
-          viewBox="0 0 1200 600"
+          viewBox="0 0 1200 500"
           preserveAspectRatio="xMinYMin meet"
           className="relative z-10"
-          style={{ minWidth: '1100px', minHeight: '550px' }}
+          style={{ minWidth: '1000px', minHeight: '400px' }}
         >
           <defs>
             <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-              <polygon points="0 0, 10 3, 0 6" fill="#334155" />
+              <polygon points="0 0, 10 3, 0 6" fill="#475569" />
             </marker>
-            <style>{`
-              @keyframes pulse-border {
-                0%, 100% { opacity: 1; stroke-width: 2; }
-                50% { opacity: 0.5; stroke-width: 4; }
-              }
-              .gate-active-box-pulse {
-                animation: pulse-border 1.5s ease-in-out infinite;
-              }
-            `}</style>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
           </defs>
 
           {/* Draw arrows */}
@@ -249,22 +247,26 @@ export function GateDiagram({ selectedPlan }) {
             const boxWidth = 140;
             const boxHeight = 50;
             const baseColor = task.color;
-            const fillColor = isCompleted ? `${baseColor}22` : isActive ? `${baseColor}44` : `${baseColor}11`;
-            const strokeColor = isActive ? '#06b6d4' : isCompleted ? '#334155' : `${baseColor}44`;
+            const fillColor = isCompleted ? baseColor : isActive ? baseColor : '#1e293b';
+            const strokeColor = isActive ? '#06b6d4' : isCompleted ? baseColor : '#475569';
             const strokeWidth = isActive ? 2 : 1;
+            const textColor = isActive ? '#ffffff' : '#e2e8f0';
 
             return (
-              <g key={`task-${taskId}`} className="transition-all duration-500">
+              <g key={`task-${taskId}`} className="transition-all duration-300" style={{ opacity: isCompleted ? 0.6 : 1 }}>
                 {isActive && (
-                  <rect x={boxX - 4} y={boxY - 4} width={boxWidth + 8} height={boxHeight + 8} rx="10" fill="none" stroke="#06b6d4" strokeWidth="1" opacity="0.3" className="gate-active-box-pulse" />
+                  <rect x={boxX - 2} y={boxY - 2} width={boxWidth + 4} height={boxHeight + 4} rx="10" fill="none" stroke="#06b6d4" strokeWidth="2" className="animate-pulse" />
                 )}
-                <rect x={boxX} y={boxY} width={boxWidth} height={boxHeight} rx="8" fill={fillColor} stroke={strokeColor} strokeWidth={strokeWidth} className="transition-all duration-500" />
-                <text x={boxX + boxWidth / 2} y={boxY + 20} textAnchor="middle" fontSize="9" fontWeight="900" fill={isActive ? '#fff' : '#64748b'} className="pointer-events-none uppercase tracking-tighter">
+                <rect x={boxX} y={boxY} width={boxWidth} height={boxHeight} rx="6" fill={fillColor} stroke={strokeColor} strokeWidth={strokeWidth} />
+                <text x={boxX + boxWidth / 2} y={boxY + 20} textAnchor="middle" fontSize="8" fontWeight="800" fill={textColor} className="pointer-events-none uppercase tracking-tight">
                   {task.task_name?.length > 18 ? task.task_name.substring(0, 15) + '...' : task.task_name}
                 </text>
-                <text x={boxX + boxWidth / 2} y={boxY + 38} textAnchor="middle" fontSize="9" fontWeight="900" fill={isActive ? '#06b6d4' : '#334155'} className="pointer-events-none tabular-nums uppercase tracking-widest">
-                  {task.duration_minutes}M
+                <text x={boxX + boxWidth / 2} y={boxY + 36} textAnchor="middle" fontSize="8" fontWeight="700" fill={isActive ? '#06b6d4' : '#94a3b8'} className="pointer-events-none tabular-nums">
+                  {task.duration_minutes}m
                 </text>
+                {isCompleted && (
+                  <text x={boxX + boxWidth - 8} y={boxY + 12} fontSize="10" fill="#10b981" fontWeight="bold">✓</text>
+                )}
               </g>
             );
           })}
@@ -277,8 +279,8 @@ export function GateDiagram({ selectedPlan }) {
             const boxY = 50 + task.rowIndex * 120;
             return (
               <g key={`delay-${taskId}`}>
-                <rect x={boxX + 100} y={boxY - 15} width="35" height="14" rx="4" fill="#ef4444" />
-                <text x={boxX + 117.5} y={boxY - 5} textAnchor="middle" fontSize="8" fontWeight="900" fill="#ffffff" className="pointer-events-none">+{taskDelay.delayMinutes}M</text>
+                <rect x={boxX + 100} y={boxY - 12} width="30" height="12" rx="3" fill="#dc2626" />
+                <text x={boxX + 115} y={boxY - 3} textAnchor="middle" fontSize="7" fontWeight="800" fill="#ffffff">+{taskDelay.delayMinutes}m</text>
               </g>
             );
           })}

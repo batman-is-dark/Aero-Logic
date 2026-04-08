@@ -90,7 +90,17 @@ export default function PlanCard({ plan, isSelected, isK2Recommended, onSelect }
             </p>
             <div className="flex items-baseline gap-1">
               <p className="text-2xl font-black tracking-tighter text-white">
-                {plan.turnaround_time ?? 60}
+                {(() => {
+                  // Calculate from actual timeline if turnaround_time is missing or invalid
+                  const tt = plan.turnaround_time;
+                  if (typeof tt === 'number' && tt > 0) return tt;
+                  const timeline = plan.task_timeline || plan.timeline || [];
+                  const maxEnd = timeline.reduce((max, t) => {
+                    const end = (t.start_minute || t.start_min || 0) + (t.duration_minutes || t.duration_min || 0);
+                    return Math.max(max, end);
+                  }, 0);
+                  return maxEnd > 0 ? maxEnd : 70;
+                })()}
               </p>
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">min</span>
             </div>
@@ -109,27 +119,26 @@ export default function PlanCard({ plan, isSelected, isK2Recommended, onSelect }
           </div>
         </div>
 
-      {/* Task Sequence Hint */}
+      {/* Task Sequence - Show all operations */}
       <div className="space-y-3 pt-5 border-t border-slate-800/50">
         <div className="flex items-center justify-between">
           <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em]">Execution Sequence</p>
-          <span className="text-[9px] text-cyan-500/70 font-black uppercase tracking-widest">8 Phases</span>
+          <span className="text-[9px] text-cyan-500/70 font-black uppercase tracking-widest">
+            {plan.task_timeline?.length || plan.timeline?.length || 0} Operations
+          </span>
         </div>
-        <div className="space-y-2">
-          {plan.task_timeline?.slice(0, 3).map((task, idx) => (
+        <div className="space-y-1.5">
+          {(plan.task_timeline || plan.timeline || []).map((task, idx) => (
             <div key={idx} className="flex justify-between items-center group/item">
-              <span className="text-[11px] font-bold text-slate-400 group-hover/item:text-slate-200 transition-colors uppercase tracking-tight flex items-center gap-2">
-                <span className="text-cyan-500/40 w-3">{idx + 1}</span>
-                {task.task_name}
+              <span className="text-[10px] font-bold text-slate-400 group-hover/item:text-slate-200 transition-colors uppercase tracking-tight flex items-center gap-2">
+                <span className="text-cyan-500/50 w-4">{idx + 1}.</span>
+                {task.task_name || task.task}
               </span>
-              <span className="text-[10px] font-black text-slate-600 uppercase tabular-nums">{task.duration_minutes}m</span>
+              <span className="text-[9px] font-black text-slate-600 uppercase tabular-nums">
+                {task.duration_minutes || task.duration_min || 0}m
+              </span>
             </div>
           ))}
-          <div className="text-[10px] text-slate-600 font-black uppercase tracking-widest pt-1 flex items-center gap-2">
-            <div className="h-px bg-slate-800 flex-1" />
-            + 5 More Operations
-            <div className="h-px bg-slate-800 flex-1" />
-          </div>
         </div>
       </div>
 
