@@ -8,17 +8,17 @@ const CATEGORY_COLORS = {
   'Ops': '#ec4899',
 };
 
-const TASK_CATEGORIES = {
-  'Passenger Boarding': 'Passenger',
-  'Refueling': 'Fuel',
-  'Cargo Load': 'Cargo',
-  'Cargo Unload': 'Cargo',
-  'Catering': 'Service',
-  'Aircraft Cleaning': 'Service',
-  'Safety Inspection': 'Ops',
-  'Door Closure': 'Ops',
-  'De-ice/Anti-ice': 'Ops',
-};
+// Flexible task categorization based on task name keywords
+function categorizeTask(taskName) {
+  if (!taskName) return 'Ops';
+  const lower = String(taskName).toLowerCase();
+  
+  if (lower.includes('boarding') || lower.includes('deplaning') || lower.includes('disembark') || lower.includes('embark')) return 'Passenger';
+  if (lower.includes('fuel') || lower.includes('refuel')) return 'Fuel';
+  if (lower.includes('cargo') || lower.includes('baggage')) return 'Cargo';
+  if (lower.includes('catering') || lower.includes('cleaning') || lower.includes('water') || lower.includes('service')) return 'Service';
+  return 'Ops';
+}
 
 export default function GanttTimeline({ plan }) {
   if (!plan?.task_timeline || plan.task_timeline.length === 0) {
@@ -49,19 +49,27 @@ export default function GanttTimeline({ plan }) {
         {/* Tasks Grid */}
         <div className="space-y-5">
           {plan.task_timeline.map((task) => {
-            const category = TASK_CATEGORIES[task.task_name] || 'Ops';
-            const color = CATEGORY_COLORS[category];
-            const startX = (task.start_minute || 0) * pixelsPerMinute;
-            const width = Math.max((task.duration_minutes || 0) * pixelsPerMinute, 40);
+            // Get task name and provide fallback
+            const taskName = task.task_name || task.task || `Task ${task.task_id}`;
+            
+            // Categorize the task
+            const category = categorizeTask(taskName);
+            const color = CATEGORY_COLORS[category] || CATEGORY_COLORS['Ops'];
+            
+            // Calculate position and width
+            const startMinute = task.start_minute || 0;
+            const durationMinutes = task.duration_minutes || 0;
+            const startX = startMinute * pixelsPerMinute;
+            const width = Math.max(durationMinutes * pixelsPerMinute, 40);
 
             return (
               <div key={task.task_id} className="grid grid-cols-[180px_1fr] items-center gap-8 group">
                 <div className="text-right">
                   <p className="text-[11px] font-black text-slate-300 group-hover:text-cyan-400 transition-colors uppercase tracking-wider">
-                    {task.task_name}
+                    {taskName}
                   </p>
                   <p className="text-[9px] text-slate-600 font-black uppercase tracking-[0.2em] mt-0.5">
-                    {task.duration_minutes} MIN OPS
+                    {durationMinutes || 0} MIN OPS
                   </p>
                 </div>
                 
