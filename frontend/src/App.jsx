@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AppProvider } from './contexts/AppContext';
 import LandingPage from './components/LandingPage';
 import SimulationPage from './components/SimulationPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState('landing');
@@ -19,8 +20,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }

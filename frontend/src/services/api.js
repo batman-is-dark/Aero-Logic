@@ -2,18 +2,23 @@ const BASE_URL = '/api';
 
 // Transform backend plan data to frontend format
 function transformPlan(plan) {
+  if (!plan) return null;
+  
   const timeline = plan.timeline || [];
   
-  // Transform timeline to task_timeline format
-  const task_timeline = timeline.map((task, idx) => ({
-    task_id: idx,
-    task_name: task.task,
-    start_minute: task.start_min,
-    end_minute: (task.start_min || 0) + (task.duration_min || 0),
-    duration_minutes: task.duration_min,
-    parallel: task.parallel,
-    category: categorizeTask(task.task),
-  }));
+  // Transform timeline to task_timeline format with error handling
+  const task_timeline = timeline.map((task, idx) => {
+    if (!task) return null;
+    return {
+      task_id: idx,
+      task_name: task.task || `Task ${idx}`,
+      start_minute: task.start_min || 0,
+      end_minute: (task.start_min || 0) + (task.duration_min || 0),
+      duration_minutes: task.duration_min || 0,
+      parallel: task.parallel || false,
+      category: categorizeTask(task.task),
+    };
+  }).filter(t => t !== null);
 
   return {
     ...plan,
@@ -23,7 +28,8 @@ function transformPlan(plan) {
 
 // Categorize tasks for color coding
 function categorizeTask(taskName) {
-  const lowerTask = taskName.toLowerCase();
+  if (!taskName) return 'Ops';
+  const lowerTask = String(taskName).toLowerCase();
   if (lowerTask.includes('boarding') || lowerTask.includes('deplaning')) return 'Passenger';
   if (lowerTask.includes('fuel')) return 'Fuel';
   if (lowerTask.includes('cargo')) return 'Cargo';
@@ -33,11 +39,20 @@ function categorizeTask(taskName) {
 
 // Transform the full optimization response
 function transformResponse(response) {
-  return {
-    ...response,
-    plans: (response.plans || []).map(transformPlan),
-    selected_plan: response.selected_plan ? transformPlan(response.selected_plan) : response.selected_plan,
-  };
+  if (!response) {
+    throw new Error('Empty response from optimization');
+  }
+  
+  try {
+    return {
+      ...response,
+      plans: (response.plans || []).map(transformPlan).filter(p => p !== null),
+      selected_plan: response.selected_plan ? transformPlan(response.selected_plan) : response.selected_plan,
+    };
+  } catch (error) {
+    console.error('Error transforming response:', error, response);
+    throw new Error(`Failed to transform optimization response: ${error.message}`);
+  }
 }
 
 export const apiClient = {

@@ -22,12 +22,30 @@ export default function SimulationPage({ onBackToLanding }) {
     setCurrentScenario(scenarioInput);
     try {
       const result = await apiClient.optimize(scenarioInput);
-      setOptimizationResult(result);
-      if (result.plans && result.plans.length > 0) {
-        setSelectedPlanId(result.selected_plan?.plan_id || result.plans[0].plan_id);
+      
+      // Validate the result structure
+      if (!result || typeof result !== 'object') {
+        throw new Error('Invalid optimization response format');
       }
+      
+      if (!result.plans || !Array.isArray(result.plans) || result.plans.length === 0) {
+        throw new Error('No plans returned from optimization');
+      }
+      
+      setOptimizationResult(result);
+      
+      // Select first plan or K2 selected plan
+      const planIdToSelect = result.selected_plan?.plan_id || result.plans[0]?.plan_id;
+      if (!planIdToSelect) {
+        throw new Error('No valid plan ID found in response');
+      }
+      
+      setSelectedPlanId(planIdToSelect);
     } catch (err) {
-      setError(err.message);
+      console.error('Optimization error:', err);
+      setError(err.message || 'An unexpected error occurred during optimization');
+      setOptimizationResult(null);
+      setSelectedPlanId(null);
     } finally {
       setLoading(false);
     }
