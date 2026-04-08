@@ -38,6 +38,22 @@ export default function SimulationPage({ onBackToLanding }) {
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col font-sans overflow-x-hidden selection:bg-cyan-500/30">
+      <style>{`
+        @keyframes glint {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-glint {
+          animation: glint 3s infinite;
+        }
+        @keyframes pulse-border {
+          0%, 100% { opacity: 1; stroke-width: 2; }
+          50% { opacity: 0.5; stroke-width: 4; }
+        }
+        .gate-active-box-pulse {
+          animation: pulse-border 1.5s ease-in-out infinite;
+        }
+      `}</style>
       {/* Enhanced Background with Brighter Blue Accents */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-cyan-600/15 blur-[160px] rounded-full" />
