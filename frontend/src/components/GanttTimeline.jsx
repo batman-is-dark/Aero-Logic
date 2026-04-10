@@ -15,6 +15,7 @@ function categorizeTask(taskName) {
   if (lower.includes('fuel')) return 'Fuel';
   if (lower.includes('cargo') || lower.includes('baggage')) return 'Cargo';
   if (lower.includes('catering') || lower.includes('cleaning') || lower.includes('water')) return 'Service';
+  if (lower.includes('de-ice') || lower.includes('deice') || lower.includes('anti-ice')) return 'Ops';  // De-icing is specialized
   return 'Ops';
 }
 

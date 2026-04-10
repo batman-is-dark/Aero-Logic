@@ -33,22 +33,30 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
     # More realistic minimum delays based on aircraft type
     min_delay = max(15, int(base["base_turnaround"] * 0.25))  # At least 15-25% of turnaround time
     
-    plan_a_delay = max(min_delay, int(base_delay * 0.5))  # Delay-minimizing: ~50% of base, but at least min_delay
+    # Add extra delay for de-icing if needed
+    deice_delay = 0
+    weather_condition = weather.get('condition', '').lower() if weather else ''
+    delay_factor = weather.get('delay_factor', 1.0) if weather else 1.0
+    needs_deice = delay_factor >= 1.4 or 'snow' in weather_condition or 'ice' in weather_condition or 'freez' in weather_condition
+    if needs_deice:
+        deice_delay = 15  # 15 min extra delay for de-icing
+    
+    plan_a_delay = max(min_delay, int(base_delay * 0.5)) + deice_delay  # Delay-minimizing: ~50% of base
     plan_a_apu = int(base["base_turnaround"] * 0.9 * apu_availability)
     plan_a_fuel = int(base["fuel_rate"] * base["base_turnaround"] / 60 * 1.8)
     plan_a_ontime = round(min(0.95, 0.7 + (1 - weather_factor) * 0.3), 2)
     
-    plan_b_delay = max(int(min_delay * 1.5), int(base_delay * 1.2))  # Fuel-minimizing: ~120-150% of base
+    plan_b_delay = max(int(min_delay * 1.5), int(base_delay * 1.2)) + deice_delay  # Fuel-minimizing: ~120-150% of base
     plan_b_apu = int(base["base_turnaround"] * 0.2)
     plan_b_fuel = int(base["fuel_rate"] * base["base_turnaround"] / 60 * 0.7)
     plan_b_ontime = round(max(0.3, 0.6 - weather_factor * 0.2), 2)
     
-    plan_c_delay = max(min_delay, int(base_delay * 0.75))  # Balanced: ~75% of base
+    plan_c_delay = max(min_delay, int(base_delay * 0.75)) + deice_delay  # Balanced: ~75% of base
     plan_c_apu = int(base["base_turnaround"] * 0.5)
     plan_c_fuel = int(base["fuel_rate"] * base["base_turnaround"] / 60 * 1.0)
     plan_c_ontime = round(min(0.85, max(0.5, 0.65 - (weather_factor - 1) * 0.2)), 2)
     
-    plan_a_timeline = _generate_timeline(base["base_turnaround"], strategy="delay")
+    plan_a_timeline = _generate_timeline(base["base_turnaround"], strategy="delay", weather=weather)
     plan_a_turnaround = _calculate_turnaround_time(plan_a_timeline)
     
     plan_a = {
@@ -79,7 +87,7 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
         },
     }
     
-    plan_b_timeline = _generate_timeline(int(base["base_turnaround"] * 1.4), strategy="fuel")
+    plan_b_timeline = _generate_timeline(int(base["base_turnaround"] * 1.4), strategy="fuel", weather=weather)
     plan_b_turnaround = _calculate_turnaround_time(plan_b_timeline)
     
     plan_b = {
@@ -110,7 +118,7 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
         },
     }
     
-    plan_c_timeline = _generate_timeline(int(base["base_turnaround"] * 1.2), strategy="balanced")
+    plan_c_timeline = _generate_timeline(int(base["base_turnaround"] * 1.2), strategy="balanced", weather=weather)
     plan_c_turnaround = _calculate_turnaround_time(plan_c_timeline)
     
     plan_c = {
@@ -225,9 +233,18 @@ def _calculate_resource_utilization(turnaround: int, apu_usage: int) -> float:
     return min(95, (turnaround - apu_usage) / turnaround * 100)
 
 
-def _generate_timeline(base_duration: int, strategy: str = "balanced") -> list:
+def _generate_timeline(base_duration: int, strategy: str = "balanced", weather: Dict = None) -> list:
+    """Generate timeline tasks. Include de-icing if weather requires it."""
+    
+    # Check if weather requires de-icing
+    needs_deice = False
+    if weather:
+        weather_condition = weather.get('condition', '').lower()
+        delay_factor = weather.get('delay_factor', 1.0)
+        needs_deice = delay_factor >= 1.4 or 'snow' in weather_condition or 'ice' in weather_condition or 'freez' in weather_condition
+    
     if strategy == "delay":
-        return [
+        tasks = [
             {"task": "Deplaning", "start_min": 0, "duration_min": 12, "parallel": False},
             {"task": "Safety Inspection", "start_min": 10, "duration_min": 8, "parallel": False},
             {"task": "Catering Removal", "start_min": 10, "duration_min": 15, "parallel": True},
@@ -240,8 +257,14 @@ def _generate_timeline(base_duration: int, strategy: str = "balanced") -> list:
             {"task": "Boarding", "start_min": 45, "duration_min": 20, "parallel": False},
             {"task": "Pushback Prep", "start_min": 65, "duration_min": 5, "parallel": False},
         ]
+        if needs_deice:
+            tasks.insert(10, {"task": "De-icing", "start_min": 55, "duration_min": 15, "parallel": False})
+            # Adjust subsequent tasks
+            for t in tasks[11:]:
+                t["start_min"] += 15
+        return tasks
     elif strategy == "fuel":
-        return [
+        tasks = [
             {"task": "Deplaning", "start_min": 0, "duration_min": 15, "parallel": False},
             {"task": "Safety Inspection", "start_min": 15, "duration_min": 10, "parallel": False},
             {"task": "Catering Removal", "start_min": 25, "duration_min": 20, "parallel": False},
@@ -254,8 +277,13 @@ def _generate_timeline(base_duration: int, strategy: str = "balanced") -> list:
             {"task": "Boarding", "start_min": 100, "duration_min": 25, "parallel": False},
             {"task": "Pushback Prep", "start_min": 125, "duration_min": 5, "parallel": False},
         ]
+        if needs_deice:
+            tasks.insert(10, {"task": "De-icing", "start_min": 110, "duration_min": 20, "parallel": False})
+            for t in tasks[11:]:
+                t["start_min"] += 20
+        return tasks
     else:
-        return [
+        tasks = [
             {"task": "Deplaning", "start_min": 0, "duration_min": 14, "parallel": False},
             {"task": "Safety Inspection", "start_min": 14, "duration_min": 9, "parallel": False},
             {"task": "Catering Removal", "start_min": 14, "duration_min": 17, "parallel": True},
@@ -268,6 +296,11 @@ def _generate_timeline(base_duration: int, strategy: str = "balanced") -> list:
             {"task": "Boarding", "start_min": 52, "duration_min": 22, "parallel": False},
             {"task": "Pushback Prep", "start_min": 74, "duration_min": 5, "parallel": False},
         ]
+        if needs_deice:
+            tasks.insert(10, {"task": "De-icing", "start_min": 64, "duration_min": 18, "parallel": False})
+            for t in tasks[11:]:
+                t["start_min"] += 18
+        return tasks
 
 
 def _get_selection_justification(selected_id: str, scenario: Dict, plan_a: Dict, plan_b: Dict, plan_c: Dict) -> str:
