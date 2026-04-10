@@ -8,15 +8,13 @@ const CATEGORY_COLORS = {
   'Ops': '#ec4899',
 };
 
-// Flexible task categorization based on task name keywords
 function categorizeTask(taskName) {
   if (!taskName) return 'Ops';
   const lower = String(taskName).toLowerCase();
-  
-  if (lower.includes('boarding') || lower.includes('deplaning') || lower.includes('disembark') || lower.includes('embark')) return 'Passenger';
-  if (lower.includes('fuel') || lower.includes('refuel')) return 'Fuel';
+  if (lower.includes('boarding') || lower.includes('deplaning')) return 'Passenger';
+  if (lower.includes('fuel')) return 'Fuel';
   if (lower.includes('cargo') || lower.includes('baggage')) return 'Cargo';
-  if (lower.includes('catering') || lower.includes('cleaning') || lower.includes('water') || lower.includes('service')) return 'Service';
+  if (lower.includes('catering') || lower.includes('cleaning') || lower.includes('water')) return 'Service';
   return 'Ops';
 }
 
@@ -29,108 +27,90 @@ export default function GanttTimeline({ plan }) {
     );
   }
 
-  // Calculate actual max time from task timeline
-  const maxEndTime = Math.max(...plan.task_timeline.map(t => {
-    const end = (t.start_minute || 0) + (t.duration_minutes || 0);
-    return end;
+  const tasks = plan.task_timeline;
+  const maxEndTime = Math.max(...tasks.map(t => {
+    const start = t.start_minute ?? t.start_min ?? 0;
+    const duration = t.duration_minutes ?? t.duration_min ?? 0;
+    return start + duration;
   }), 0);
-  
-  // Add buffer (20%) for visual spacing
-  const maxTime = Math.ceil(maxEndTime * 1.2);
-  const pixelsPerMinute = 12; // Slightly wider for better visibility
-  
-  // Dynamic width based on actual timeline duration
-  const timelineWidth = Math.max(800, maxTime * pixelsPerMinute + 200);
-
-  // Generate time markers
-  const timeMarkers = [];
-  for (let t = 0; t <= maxTime + 15; t += 15) {
-    timeMarkers.push(t);
-  }
 
   return (
-    <div className="bg-slate-950/80 backdrop-blur-xl rounded-2xl p-6 border border-slate-800/50 shadow-2xl overflow-x-auto">
-      <div style={{ width: `${timelineWidth}px`, minWidth: `${timelineWidth}px` }}>
-        {/* Header Legend */}
-        <div className="flex gap-4 mb-6 pb-4 border-b border-slate-800/50 flex-wrap">
-          {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
-            <div key={cat} className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: color }} />
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.15em]">{cat}</span>
-            </div>
-          ))}
-          <div className="ml-auto text-[9px] font-black text-cyan-400 uppercase tracking-[0.15em]">
-            Total: {maxEndTime} min
+    <div className="bg-slate-950/80 backdrop-blur-xl rounded-2xl p-4 border border-slate-800/50 shadow-2xl overflow-auto max-h-[500px]">
+      {/* Header */}
+      <div className="flex gap-3 mb-4 pb-3 border-b border-slate-800/50 flex-wrap items-center">
+        {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
+          <div key={cat} className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: color }} />
+            <span className="text-[8px] font-black text-slate-500 uppercase">{cat}</span>
           </div>
+        ))}
+        <div className="ml-auto text-[10px] font-black text-cyan-400">
+          Duration: {maxEndTime} min
         </div>
+      </div>
 
-        {/* Tasks Grid - Each task gets its own row */}
-        <div className="space-y-2">
-          {plan.task_timeline.map((task, idx) => {
-            const taskName = task.task_name || task.task || `Task ${idx}`;
-            const category = categorizeTask(taskName);
-            const color = CATEGORY_COLORS[category] || CATEGORY_COLORS['Ops'];
-            const startMinute = task.start_minute ?? task.start_min ?? 0;
-            const durationMinutes = task.duration_minutes ?? task.duration_min ?? 0;
-            const endMinute = startMinute + durationMinutes;
-            const startX = startMinute * pixelsPerMinute;
-            const width = Math.max(durationMinutes * pixelsPerMinute, 25);
+      {/* Task List - Simple vertical layout */}
+      <div className="space-y-1">
+        {tasks.map((task, idx) => {
+          const taskName = task.task_name || task.task || `Task ${idx}`;
+          const category = categorizeTask(taskName);
+          const color = CATEGORY_COLORS[category] || CATEGORY_COLORS['Ops'];
+          const startMinute = task.start_minute ?? task.start_min ?? 0;
+          const durationMinutes = task.duration_minutes ?? task.duration_min ?? 0;
+          const endMinute = startMinute + durationMinutes;
+          
+          // Calculate position as percentage of total time
+          const startPercent = (startMinute / maxEndTime) * 100;
+          const widthPercent = Math.max((durationMinutes / maxEndTime) * 100, 2);
 
-            return (
-              <div key={task.task_id ?? idx} className="grid grid-cols-[150px_1fr] items-center gap-4 group">
-                <div className="text-right flex flex-col items-end">
-                  <p className="text-[10px] font-bold text-slate-300 group-hover:text-cyan-400 transition-colors uppercase truncate max-w-[140px]" title={taskName}>
+          return (
+            <div key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-900/30 transition-colors group">
+              {/* Number */}
+              <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-400">
+                {idx + 1}
+              </div>
+
+              {/* Category color bar */}
+              <div className="w-1 h-8 rounded-full" style={{ backgroundColor: color }} />
+
+              {/* Task info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-slate-200 uppercase truncate">
                     {taskName}
-                  </p>
-                  <p className="text-[8px] text-slate-500 font-black uppercase tracking-[0.1em]">
-                    {startMinute}-{endMinute}m ({durationMinutes}m)
-                  </p>
-                </div>
-                
-                <div className="relative h-6 bg-slate-900/50 rounded border border-slate-800/30 overflow-visible">
-                  <div
-                    className="absolute h-full rounded-sm transition-all duration-300 group-hover:brightness-125"
-                    style={{
-                      left: `${startX}px`,
-                      width: `${width}px`,
-                      backgroundColor: color,
-                      boxShadow: `0 0 8px ${color}66`,
-                      minWidth: '4px',
-                    }}
-                  />
-                  {/* Show time markers on the bar for very short durations */}
-                  {durationMinutes > 0 && (
-                    <span 
-                      className="absolute top-1/2 -translate-y-1/2 text-[6px] font-black text-slate-900/70 pointer-events-none"
-                      style={{ left: `${startX + width/2}px`, transform: 'translate(-50%, -50%)' }}
-                    >
-                      {durationMinutes}m
-                    </span>
+                  </span>
+                  {task.parallel && (
+                    <span className="text-[7px] px-1.5 py-0.5 bg-purple-500/20 text-purple-400 rounded font-black uppercase">PARALLEL</span>
                   )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Time Axis at Bottom */}
-        <div className="grid grid-cols-[140px_1fr] gap-4 mt-6 pt-4 border-t border-slate-800/50">
-          <div />
-          <div className="relative h-6">
-            {timeMarkers.map((time) => {
-              const x = time * pixelsPerMinute;
-              return (
-                <div
-                  key={time}
-                  className="absolute text-[8px] font-black text-slate-500 uppercase tracking-widest border-l border-slate-700/50 pl-1 h-5 flex items-end"
-                  style={{ left: `${x}px` }}
-                >
-                  T+{time}
+                <div className="text-[9px] text-slate-500 font-black">
+                  {startMinute}m → {endMinute}m ({durationMinutes}m)
                 </div>
-              );
-            })}
+              </div>
+
+              {/* Visual timeline bar */}
+              <div className="w-24 h-3 bg-slate-900 rounded relative overflow-hidden">
+                <div
+                  className="absolute h-full rounded-sm"
+                  style={{
+                    left: `${startPercent}%`,
+                    width: `${widthPercent}%`,
+                    backgroundColor: color,
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Time scale at bottom */}
+      <div className="flex justify-between mt-4 pt-3 border-t border-slate-800/50">
+        {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
+          <div key={pct} className="text-[8px] text-slate-500 font-black">
+            T+{Math.round(maxEndTime * pct)}m
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

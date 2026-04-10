@@ -29,18 +29,21 @@ def _generate_scenario_aware_response(base_scenario: Dict[str, Any]) -> Dict[str
     weather_delay = base["base_turnaround"] * max(0, weather_factor - 1)  # Only add delay if weather_factor > 1
     base_delay = inherent_delay + injected_delay + weather_delay
     
-     # Calculate values first, then build reasoning
-    plan_a_delay = max(8, int(base_delay * 0.5))  # Delay-minimizing: ~50% of base
+    # Calculate values first, then build reasoning
+    # More realistic minimum delays based on aircraft type
+    min_delay = max(15, int(base["base_turnaround"] * 0.25))  # At least 15-25% of turnaround time
+    
+    plan_a_delay = max(min_delay, int(base_delay * 0.5))  # Delay-minimizing: ~50% of base, but at least min_delay
     plan_a_apu = int(base["base_turnaround"] * 0.9 * apu_availability)
     plan_a_fuel = int(base["fuel_rate"] * base["base_turnaround"] / 60 * 1.8)
     plan_a_ontime = round(min(0.95, 0.7 + (1 - weather_factor) * 0.3), 2)
     
-    plan_b_delay = max(15, int(base_delay * 1.2))  # Fuel-minimizing: ~120% of base (slower operations)
+    plan_b_delay = max(int(min_delay * 1.5), int(base_delay * 1.2))  # Fuel-minimizing: ~120-150% of base
     plan_b_apu = int(base["base_turnaround"] * 0.2)
     plan_b_fuel = int(base["fuel_rate"] * base["base_turnaround"] / 60 * 0.7)
     plan_b_ontime = round(max(0.3, 0.6 - weather_factor * 0.2), 2)
     
-    plan_c_delay = max(12, int(base_delay * 0.75))  # Balanced: ~75% of base
+    plan_c_delay = max(min_delay, int(base_delay * 0.75))  # Balanced: ~75% of base
     plan_c_apu = int(base["base_turnaround"] * 0.5)
     plan_c_fuel = int(base["fuel_rate"] * base["base_turnaround"] / 60 * 1.0)
     plan_c_ontime = round(min(0.85, max(0.5, 0.65 - (weather_factor - 1) * 0.2)), 2)
