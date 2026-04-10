@@ -271,14 +271,6 @@ export default function ScenarioPanel({ onOptimize, isLoading }) {
               </>
             )}
           </button>
-          
-          <button
-            onClick={handleGenerate}
-            disabled={isLoading}
-            className="w-full bg-slate-900 border border-slate-800 text-slate-400 px-6 py-3.5 rounded-xl text-[10px] font-black hover:bg-slate-800 hover:text-slate-100 disabled:opacity-50 transition-all uppercase tracking-[0.2em]"
-          >
-            Randomize Intel
-          </button>
         </div>
       </div>
     </div>
