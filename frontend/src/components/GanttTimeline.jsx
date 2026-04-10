@@ -28,16 +28,22 @@ export default function GanttTimeline({ plan }) {
   }
 
   const tasks = plan.task_timeline;
-  const maxEndTime = Math.max(...tasks.map(t => {
+  
+  // Calculate max time from actual data
+  const maxEndTime = tasks.reduce((max, t) => {
     const start = t.start_minute ?? t.start_min ?? 0;
     const duration = t.duration_minutes ?? t.duration_min ?? 0;
-    return start + duration;
-  }), 0);
+    return Math.max(max, start + duration);
+  }, 0);
+  
+  const minWidth = 600;
+  const pixelsPerMinute = Math.max(6, minWidth / (maxEndTime * 1.2));
+  const totalWidth = Math.max(minWidth, (maxEndTime * 1.2) * pixelsPerMinute);
 
   return (
-    <div className="bg-slate-950/80 backdrop-blur-xl rounded-2xl p-4 border border-slate-800/50 shadow-2xl overflow-auto max-h-[500px]">
+    <div className="bg-slate-950/80 backdrop-blur-xl rounded-2xl p-5 border border-slate-800/50 shadow-2xl overflow-x-auto">
       {/* Header */}
-      <div className="flex gap-3 mb-4 pb-3 border-b border-slate-800/50 flex-wrap items-center">
+      <div className="flex gap-4 mb-4 pb-3 border-b border-slate-800/50 flex-wrap items-center">
         {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
           <div key={cat} className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: color }} />
@@ -45,72 +51,78 @@ export default function GanttTimeline({ plan }) {
           </div>
         ))}
         <div className="ml-auto text-[10px] font-black text-cyan-400">
-          Duration: {maxEndTime} min
+          Total: {maxEndTime} min
         </div>
       </div>
 
-      {/* Task List - Simple vertical layout */}
-      <div className="space-y-1">
-        {tasks.map((task, idx) => {
-          const taskName = task.task_name || task.task || `Task ${idx}`;
-          const category = categorizeTask(taskName);
-          const color = CATEGORY_COLORS[category] || CATEGORY_COLORS['Ops'];
-          const startMinute = task.start_minute ?? task.start_min ?? 0;
-          const durationMinutes = task.duration_minutes ?? task.duration_min ?? 0;
-          const endMinute = startMinute + durationMinutes;
-          
-          // Calculate position as percentage of total time
-          const startPercent = (startMinute / maxEndTime) * 100;
-          const widthPercent = Math.max((durationMinutes / maxEndTime) * 100, 2);
+      {/* Gantt Chart Container */}
+      <div style={{ minWidth: `${totalWidth}px` }}>
+        {/* Task Rows */}
+        <div className="space-y-1">
+          {tasks.map((task, idx) => {
+            const taskName = task.task_name || task.task || `Task ${idx}`;
+            const category = categorizeTask(taskName);
+            const color = CATEGORY_COLORS[category] || CATEGORY_COLORS['Ops'];
+            const start = task.start_minute ?? task.start_min ?? 0;
+            const duration = task.duration_minutes ?? task.duration_min ?? 0;
+            const end = start + duration;
+            
+            const left = start * pixelsPerMinute;
+            const width = Math.max(duration * pixelsPerMinute, 20);
 
-          return (
-            <div key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-900/30 transition-colors group">
-              {/* Number */}
-              <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-400">
-                {idx + 1}
-              </div>
-
-              {/* Category color bar */}
-              <div className="w-1 h-8 rounded-full" style={{ backgroundColor: color }} />
-
-              {/* Task info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-slate-200 uppercase truncate">
+            return (
+              <div key={idx} className="flex items-center group">
+                {/* Task Label */}
+                <div className="w-32 flex-shrink-0 text-right pr-3">
+                  <span className="text-[9px] font-bold text-slate-300 uppercase truncate block" title={taskName}>
                     {taskName}
                   </span>
-                  {task.parallel && (
-                    <span className="text-[7px] px-1.5 py-0.5 bg-purple-500/20 text-purple-400 rounded font-black uppercase">PARALLEL</span>
-                  )}
+                  <span className="text-[7px] text-slate-500 font-black">{duration}m</span>
                 </div>
-                <div className="text-[9px] text-slate-500 font-black">
-                  {startMinute}m → {endMinute}m ({durationMinutes}m)
+                
+                {/* Timeline Bar */}
+                <div className="flex-1 h-6 bg-slate-900/50 rounded relative" style={{ width: totalWidth - 140 }}>
+                  <div
+                    className="absolute h-full rounded-sm transition-all duration-300 group-hover:brightness-110"
+                    style={{
+                      left: `${left}px`,
+                      width: `${width}px`,
+                      backgroundColor: color,
+                      boxShadow: `0 0 6px ${color}55`,
+                    }}
+                  >
+                    {/* Duration label inside bar */}
+                    {width > 25 && (
+                      <span className="absolute inset-0 flex items-center justify-center text-[7px] font-black text-slate-900/80">
+                        {duration}m
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
+            );
+          })}
+        </div>
 
-              {/* Visual timeline bar */}
-              <div className="w-24 h-3 bg-slate-900 rounded relative overflow-hidden">
+        {/* Time Axis */}
+        <div className="flex items-center mt-3 pt-3 border-t border-slate-800/50">
+          <div className="w-32 flex-shrink-0" />
+          <div className="flex-1 relative" style={{ width: totalWidth - 140 }}>
+            {[0, 0.25, 0.5, 0.75, 1].map((pct) => {
+              const time = Math.round(maxEndTime * pct);
+              const x = time * pixelsPerMinute;
+              return (
                 <div
-                  className="absolute h-full rounded-sm"
-                  style={{
-                    left: `${startPercent}%`,
-                    width: `${widthPercent}%`,
-                    backgroundColor: color,
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Time scale at bottom */}
-      <div className="flex justify-between mt-4 pt-3 border-t border-slate-800/50">
-        {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
-          <div key={pct} className="text-[8px] text-slate-500 font-black">
-            T+{Math.round(maxEndTime * pct)}m
+                  key={pct}
+                  className="absolute text-[7px] text-slate-500 font-black"
+                  style={{ left: `${x}px`, transform: 'translateX(-50%)' }}
+                >
+                  T+{time}
+                </div>
+              );
+            })}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
